@@ -29,9 +29,9 @@ def convert(type_corpus: str, corpus_path: str, corpus_csv_out: str):
     json_files = []
 
     total_repos = get_total_repos(corpus_path)
-    print(f"Total repos: {str(total_repos)}")
+    print(f"Total repos {type_corpus}: {str(total_repos)}")
 
-    with tqdm(total=total_repos, desc="Getting corpus") as pbar:
+    with tqdm(total=total_repos, desc="Getting json corpus files from folders") as pbar:
         index = 0
         for path in Path(corpus_path).iterdir():
             if path.is_dir():
@@ -41,16 +41,6 @@ def convert(type_corpus: str, corpus_path: str, corpus_csv_out: str):
             #if index > 700:
             #    break
 
-    """
-    for file in json_files:
-        with open(file) as f:
-            data = json.load(f)
-            data_str = str(data)
-            if ("import static net.floodlightcontroller.devicemanager.internal" in data_str
-                    and "DeviceManagerImpl.DeviceUpdate.Change" in data_str):
-                print(file)
-    """
-
     # import static net.floodlightcontroller.devicemanager.internal.
     # DeviceManagerImpl.DeviceUpdate.Change
 
@@ -58,12 +48,29 @@ def convert(type_corpus: str, corpus_path: str, corpus_csv_out: str):
     #print(json_files[0])
     print()
 
-    # for file in json_files:
-    #     df = pd.read_json(file)
-    #     print(df)
-    # use pandas.concat method
-    print("Getting dataframe...")
-    df = pd.concat([pd.DataFrame([pd.read_json(f_name, typ='series')]) for f_name in json_files])
+    #print("Getting dataframe...")
+    #tqdm.pandas() #this is how you activate the pandas features in tqdm
+    #df = pd.concat([pd.DataFrame([pd.read_json(f_name, typ='series')]) for f_name in json_files]).progress_apply(lambda x: x)
+
+    json_data = []
+    i = 0
+    for file in tqdm(json_files, desc="Getting json data"):
+        df_json = pd.read_json(file, typ='series', orient='records')
+        json_data.append(df_json)
+
+        # with open(file) as f:
+        #     data = json.load(f)
+        #     json_data.append(data)
+
+        # i += 1
+        # if i == 10:
+        #     break
+        
+    #print(json_data)
+    
+    print("\nGetting dataframe...")
+    df = pd.DataFrame(json_data)
+    #df = pd.json_normalize(json_data)
 
     # view the concatenated dataframe
     # print(df)
@@ -93,21 +100,26 @@ def convert(type_corpus: str, corpus_path: str, corpus_csv_out: str):
     print()
     print(df.iloc[:1,5])
     print()
+
+    #return
     # df.rename(columns = {'src_fm_fc_ms_ff':'source'}, inplace = True)
     # df.rename(columns = {'s':'source'}, inplace = True)
 
     # Reordenamos aleatoriamente el DataFrame antes de guardarlo en el CSV
+    print("Suffling dataframe...")
     df_shuffled = df.sample(frac=1, random_state=SEED).reset_index(drop=True)
 
     # convert dataframe to csv file
+    print("Converting to CSV...")
     df_shuffled.to_csv(out_path, index=False, encoding="utf-8")
+
+    print("Finish writting CSV")
 
     # load the resultant csv file
     result = pd.read_csv(out_path)
 
     # and view the data
     print(result.info())
-    print()
     #print(result)
 
 

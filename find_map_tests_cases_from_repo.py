@@ -326,8 +326,8 @@ def find_map_test_cases(root, language, output, repo, error_cloning):
 
     index = 0
 
-    #test_extract_dependencies(parser, dependency_parser, parserutils)
-    #return None
+    # test_extract_dependencies(parser, dependency_parser, parserutils)
+    # return None
     #pbar = tqdm(range(10), desc="myprog", postfix="postfix", ncols=80, total = 100)
 
     log_error_mapping_path = os.path.join(output, "log_error_mapping.txt")
@@ -410,7 +410,7 @@ def test_extract_dependencies(parser: ClassParser, dependency_parser: Dependency
     #                Text bock here
     #                """)
     
-    # file_text = R"E:\000_Tesis\project_tesis_build_dataset\ClasePrueba.java"
+    # file_text = R"E:\000_Tesis\DynaMTests\MyClass.java"
     # parsed_classe = parser.parse_file(file_text)
     # print(parsed_classe)
     # return ""
@@ -835,14 +835,14 @@ def parse_args():
         "--output",
         type=str,
         #default="/tmp/output/",
-        default="E:/000_Tesis/project_tesis_build_dataset/output/",
+        default="E:/000_Tesis/project_tesis_build_dataset/output_test/",
         help="Path to the output folder",
     )
     parser.add_argument(
         "--output_empty",
         type=str,
         #default="/tmp/output_empty/",
-        default="E:/000_Tesis/project_tesis_build_dataset/output_empty/",
+        default="E:/000_Tesis/project_tesis_build_dataset/output_empty_test/",
         help="Path to the empty outputs folder",
     )
 

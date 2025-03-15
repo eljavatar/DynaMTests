@@ -9,6 +9,13 @@ from tqdm import tqdm
 from ParserUtils import ParserUtils
 
 
+list_errors_methods_source = []
+list_errors_focal_class_sig = []
+list_errors_external_class_sig = []
+list_errors_focal_signatures = []
+list_errors_external_signatures = []
+
+
 def get_total_repos(path: str):
     count_repos = 0
 
@@ -94,7 +101,7 @@ def build_corpus(input_dataset: str,
     
     #total_repos = get_total_repos(input_dataset)
     total_repos = len(list_paths_by_project_id)
-    print(f"\n\nTotal repos: {str(total_repos)}")
+    print(f"\n\nTotal versions for project {project_id}: {str(total_repos)}")
 
     path_out_corpus_data = os.path.join(output_corpus, "data_by_project_and_version/" + project_id)
     os.makedirs(path_out_corpus_data, exist_ok=True)
@@ -111,6 +118,7 @@ def build_corpus(input_dataset: str,
     list_imports_focal_class = []
     list_package_focal_class = []
     list_path_focal_class = []
+    list_focal_method_name = []
     
     index_repo = 1
 
@@ -150,7 +158,7 @@ def build_corpus(input_dataset: str,
                 with open(path_json_file_method_dataset, encoding=input_encoding) as f:
                     data = json.load(f)
 
-                    src_fm_fc_ms_ff, src_fm_fc_dctx, src_fm_fc_dctx_priv, imports_focal_class, package_focal_class, path_focal_class = extract_data_from_mapped_test_case(
+                    focal_method_name, src_fm_fc_ms_ff, src_fm_fc_dctx, src_fm_fc_dctx_priv, imports_focal_class, package_focal_class, path_focal_class = extract_data_from_mapped_test_case(
                         parser_utils,
                         data, 
                         tag_focal_context_start, 
@@ -159,6 +167,9 @@ def build_corpus(input_dataset: str,
                         tag_external_context_end,
                         tag_private_focal_context_start,
                         tag_private_focal_context_end, file)
+
+                if src_fm_fc_ms_ff is None:
+                    continue
 
                 #file_without_extension = file.split('.')[0]
                 #file_corpus_json = file_without_extension + "_corpus.json"
@@ -171,7 +182,8 @@ def build_corpus(input_dataset: str,
                     'src_fm_fc_dctx_priv': src_fm_fc_dctx_priv,
                     'imports_focal_class': imports_focal_class,
                     'package_focal_class': package_focal_class,
-                    'path_focal_class': path_focal_class
+                    'path_focal_class': path_focal_class,
+                    'focal_method_name': focal_method_name
                 }
                 
                 export_corpus_json(data_json, path_file_corpus_json)
@@ -186,6 +198,7 @@ def build_corpus(input_dataset: str,
                 export_corpus_txt(imports_focal_class, os.path.join(path_data_method, "imports_focal_class.txt"))
                 export_corpus_txt(package_focal_class, os.path.join(path_data_method, "package_focal_class.txt"))
                 export_corpus_txt(path_focal_class, os.path.join(path_data_method, "path_focal_class.txt"))
+                export_corpus_txt(focal_method_name, os.path.join(path_data_method, "focal_method_name.txt"))
 
                 list_src_fm_fc_ms_ff.append(src_fm_fc_ms_ff)
                 list_src_fm_fc_dctx.append(src_fm_fc_dctx)
@@ -193,6 +206,7 @@ def build_corpus(input_dataset: str,
                 list_imports_focal_class.append(imports_focal_class)
                 list_package_focal_class.append(package_focal_class)
                 list_path_focal_class.append(path_focal_class)
+                list_focal_method_name.append(focal_method_name)
 
                 # Copy method metadata
                 shutil.copy(path_json_file_method_dataset, os.path.join(path_data_method, "metadata.json"))
@@ -200,7 +214,6 @@ def build_corpus(input_dataset: str,
                 i += 1
 
         index_repo += 1
-    
     
     print("\nExporting raw corpus")
     export_corpus_raw(
@@ -211,10 +224,13 @@ def build_corpus(input_dataset: str,
         list_imports_focal_class,
         list_package_focal_class,
         list_path_focal_class,
+        list_focal_method_name,
         "Writing raw corpus"
     )
 
     print(f"\nTotal corpus {project_id}: {str(len(list_src_fm_fc_ms_ff))}\n")
+
+    return len(list_src_fm_fc_ms_ff)
 
 
 def export_corpus_json(data, file_path: str):
@@ -247,6 +263,7 @@ def export_corpus_raw(path_out_courpus_raw: str,
                       list_imports_focal_class: list[str],
                       list_package_focal_class: list[str],
                       list_path_focal_class: list[str],
+                      list_focal_method_name: list[str],
                       msg_tqdm: str):
     
     path_file_src_fm_fc_ms_ff = os.path.join(path_out_courpus_raw, "src_fm_fc_ms_ff.txt")
@@ -255,6 +272,7 @@ def export_corpus_raw(path_out_courpus_raw: str,
     path_file_imports_focal_class = os.path.join(path_out_courpus_raw, "imports_focal_class.txt")
     path_file_package_focal_class = os.path.join(path_out_courpus_raw, "package_focal_class.txt")
     path_file_path_focal_class = os.path.join(path_out_courpus_raw, "path_focal_class.txt")
+    path_file_focal_method_name = os.path.join(path_out_courpus_raw, "focal_method_name.txt")
 
     #Removing older version of the file outputs
     if os.path.exists(path_file_src_fm_fc_ms_ff):
@@ -274,6 +292,9 @@ def export_corpus_raw(path_out_courpus_raw: str,
     
     if os.path.exists(path_file_path_focal_class):
         os.remove(path_file_path_focal_class)
+    
+    if os.path.exists(path_file_focal_method_name):
+        os.remove(path_file_focal_method_name)
 
     #Writing to file
     with (
@@ -282,7 +303,8 @@ def export_corpus_raw(path_out_courpus_raw: str,
             open(path_file_src_fm_fc_dctx_priv, 'w', encoding='utf-8') as f_src_fm_fc_dctx_priv, 
             open(path_file_imports_focal_class, 'w', encoding='utf-8') as f_imp_f,
             open(path_file_package_focal_class, 'w', encoding='utf-8') as f_pack_fc,
-            open(path_file_path_focal_class, 'w', encoding='utf-8') as f_path_fc
+            open(path_file_path_focal_class, 'w', encoding='utf-8') as f_path_fc,
+            open(path_file_focal_method_name, 'w', encoding='utf-8') as f_path_fm
         ):
         for index in tqdm(range(len(list_src_fm_fc_ms_ff)), desc=msg_tqdm):
             f_src_fm_fc_ms_ff.write(list_src_fm_fc_ms_ff[index] + "\n")
@@ -291,6 +313,7 @@ def export_corpus_raw(path_out_courpus_raw: str,
             f_imp_f.write(list_imports_focal_class[index] + "\n")
             f_pack_fc.write(list_package_focal_class[index] + "\n")
             f_path_fc.write(list_path_focal_class[index] + "\n")
+            f_path_fm.write(list_focal_method_name[index] + "\n")
 
 
 def extract_data_from_mapped_test_case(parser_utils: ParserUtils,
@@ -306,51 +329,93 @@ def extract_data_from_mapped_test_case(parser_utils: ParserUtils,
     path_focal_class = focal_class['file']
     package_focal_class = focal_class['package']
 
+    focal_method_name = focal_method['method_name']
+
+    body_method = clean_comments_in_code(parser_utils, focal_method['body'])
+    body_method = body_method.replace(" . ", ".").replace(". ", ".").replace(" .", ".").replace("){", ") {").replace("( ", "(").replace(" )", ")").replace("[ ", "[").replace(" ]", "]")
+    body_method = parser_utils.fix_type_parameters_inconsistences(body_method)
+
+    body_method_is_empty = parser_utils.method_body_is_empty(body_method)
+
+    if body_method_is_empty:
+        return None, None, None, None, None, None, None
+    
+    code_to_validate_source = "public class AnyClass { " + body_method + " }" 
+    validate_source = parser_utils.validate_if_code_has_errors(code_to_validate_source, True)
+    if validate_source == True:
+        # print("\n\n\n\n")
+        # print(f"File error Source method: {file} \n")
+        # print(body_method)
+        # print("\n\n\n\n")
+        list_errors_methods_source.append(f"File error Source Method: {file} \n\n{body_method}")
+        return None, None, None, None, None, None, None
+
     src_fm_fc_ms_ff, src_fm_fc_dctx, src_fm_fc_dctx_priv = build_format_corpus(
         parser_utils,
         focal_class, 
         focal_method, 
+        body_method, 
         tag_focal_context_start, 
         tag_focal_context_end, 
         tag_external_context_start, 
         tag_external_context_end,
         tag_private_focal_context_start,
-        tag_private_focal_context_end
+        tag_private_focal_context_end, file
     )
 
-    imports_focal_class = clean_tabs_and_new_lines('|'.join(focal_class['imports']))
+    if src_fm_fc_ms_ff is None:
+        return None, None, None, None, None, None, None
+
+    imports_focal_class = clean_comments_in_code(parser_utils, '|'.join(focal_class['imports']))
     imports_focal_class = imports_focal_class.replace(" . ", ".").replace(". ", ".").replace(" .", ".")
 
-    return src_fm_fc_ms_ff, src_fm_fc_dctx, src_fm_fc_dctx_priv, imports_focal_class, package_focal_class, path_focal_class
+    return focal_method_name, src_fm_fc_ms_ff, src_fm_fc_dctx, src_fm_fc_dctx_priv, imports_focal_class, package_focal_class, path_focal_class
 
 
 def build_format_corpus(parser_utils: ParserUtils,
                         focal_class: dict,
                         focal_method: dict,
+                        body_method: str,
                         tag_focal_context_start: str,
                         tag_focal_context_end: str,
                         tag_external_context_start: str,
                         tag_external_context_end: str,
                         tag_private_focal_context_start: str,
-                        tag_private_focal_context_end: str):
+                        tag_private_focal_context_end: str, file):
     
-    format_class_signature = '{} {} {}'
-    class_signature = format_class_signature.format(focal_class['class_name'], focal_class['superclass'], focal_class['interfaces']).strip()
-    class_signature = clean_comments_in_code(parser_utils, class_signature)
-    
-    body_method = clean_comments_in_code(parser_utils, focal_method['body'])
-    body_method = body_method.replace(" . ", ".").replace(". ", ".").replace(" .", ".")
+    # format_class_signature = '{} {} {}'
+    # class_signature = format_class_signature.format(focal_class['class_name'], focal_class['superclass'], focal_class['interfaces']).strip()
+    # class_signature = focal_class['class_signature'].strip()
+    # class_signature = clean_comments_in_code(parser_utils, class_signature)
+    # class_signature = clean_signature_annotations(parser_utils, class_signature)
+
+    class_signature = build_class_signature(parser_utils, focal_class)
+
+    code_to_validate_class_sig = class_signature + " { }"
+    validate_code_class_sig = parser_utils.validate_if_code_has_errors(code_to_validate_class_sig, False)
+    if validate_code_class_sig == True:
+        # print("\n\n\n\n")
+        # print(f"File error Class Signature: {file} \n")
+        # print(class_signature)
+        # print("\n\n\n\n")
+        list_errors_focal_class_sig.append(f"File error Class Signature: {file} \n{class_signature}")
+        return None, None, None
 
     focal_class_methods = focal_class['methods']
     focal_class_fields = focal_class['fields']
 
-    constructors = [meth['full_signature_parameters'] + ";" for meth in focal_class_methods if meth['is_constructor'] == True]
+    key_method_for_extract = 'full_signature'
+    # key_method_for_extract = 'full_signature_parameters'
+
+    constructors = [meth[key_method_for_extract] + ";" for meth in focal_class_methods if meth['is_constructor'] == True]
     constructors_str = '\n'.join(constructors)
     constructors_str = clean_comments_in_code(parser_utils, constructors_str)
+    constructors_str = parser_utils.fix_type_parameters_inconsistences(constructors_str)
 
-    non_private_methods = [meth['full_signature_parameters'] + ";" for meth in focal_class_methods if meth['is_constructor'] == False and 'private' not in meth['modifiers']]
+    non_private_methods = [meth[key_method_for_extract] + ";" for meth in focal_class_methods if meth['is_constructor'] == False and 'private' not in meth['modifiers']]
     non_private_methods_str = '\n'.join(non_private_methods)
     non_private_methods_str = clean_comments_in_code(parser_utils, non_private_methods_str)
+    non_private_methods_str = parser_utils.fix_type_parameters_inconsistences(non_private_methods_str)
 
     non_private_fields = [field['original_string'] for field in focal_class_fields if 'private' not in field['modifier']]
     non_private_fields_str = '\n'.join(non_private_fields)
@@ -366,37 +431,116 @@ def build_format_corpus(parser_utils: ParserUtils,
         non_private_fields_str
     )
     src_fm_fc_ms_ff = clean_tabs_and_new_lines(src_fm_fc_ms_ff)
+    src_fm_fc_ms_ff = src_fm_fc_ms_ff.replace(" . ", ".").replace(". ", ".").replace(" .", ".").replace("( ", "(").replace(" )", ")").replace("[ ", "[").replace(" ]", "]")
 
 
-    used_private_signatures_of_class = [meth['full_signature_parameters'] + ";" for meth in focal_class_methods if 'private' in meth['modifiers'] and meth['is_constructor'] == True]
-    used_private_signatures_of_class.extend([meth['full_signature_parameters'] + ";" for meth in focal_method['class_private_deps_used']['methods'] if 'private' in meth['modifiers'] and meth['is_constructor'] == False])
-    used_private_signatures_of_class.extend([field['original_string'] for field in focal_method['class_private_deps_used']['fields'] if 'private' in field['modifier']])
+    class_private_deps_used = focal_method['class_private_deps_used']
+    class_private_deps_used_methods = class_private_deps_used['methods']
+    class_private_deps_used_fields = class_private_deps_used['fields']
+
+    # Extract all private constructors
+    used_private_signatures_of_class = [meth[key_method_for_extract] + ";" for meth in focal_class_methods if 'private' in meth['modifiers'] and meth['is_constructor'] == True]
+    # Extract private methods and fields of class used in focal method
+    used_private_signatures_of_class.extend([meth[key_method_for_extract] + ";" for meth in class_private_deps_used_methods if 'private' in meth['modifiers'] and meth['is_constructor'] == False])
+    used_private_signatures_of_class.extend([field['original_string'] for field in class_private_deps_used_fields if 'private' in field['modifier']])
     used_private_signatures_of_class_str = '\n'.join(used_private_signatures_of_class)
     used_private_signatures_of_class_str = clean_comments_in_code(parser_utils, used_private_signatures_of_class_str)
+    used_private_signatures_of_class_str = parser_utils.fix_type_parameters_inconsistences(used_private_signatures_of_class_str)
 
-    used_non_private_signatures_of_class = [meth['full_signature_parameters'] + ";" for meth in focal_class_methods if 'private' not in meth['modifiers'] and meth['is_constructor'] == True]
-    used_non_private_signatures_of_class.extend([meth['full_signature_parameters'] + ";" for meth in focal_method['class_private_deps_used']['methods'] if 'private' not in meth['modifiers'] and meth['is_constructor'] == False])
-    used_non_private_signatures_of_class.extend([field['original_string'] for field in focal_method['class_private_deps_used']['fields'] if 'private' not in field['modifier']])
+    class_non_private_deps_used = focal_method['class_non_private_deps_used']
+    class_non_private_deps_used_methods = class_non_private_deps_used['methods']
+    class_non_private_deps_used_fields = class_non_private_deps_used['fields']
+
+    # Extract all private constructors
+    used_non_private_signatures_of_class = [meth[key_method_for_extract] + ";" for meth in focal_class_methods if 'private' not in meth['modifiers'] and meth['is_constructor'] == True]
+    # Extract non private methods and fields of class used in focal method
+    used_non_private_signatures_of_class.extend([meth[key_method_for_extract] + ";" for meth in class_non_private_deps_used_methods if 'private' not in meth['modifiers'] and meth['is_constructor'] == False])
+    used_non_private_signatures_of_class.extend([field['original_string'] for field in class_non_private_deps_used_fields if 'private' not in field['modifier']])
     used_non_private_signatures_of_class_str = '\n'.join(used_non_private_signatures_of_class)
     used_non_private_signatures_of_class_str = clean_comments_in_code(parser_utils, used_non_private_signatures_of_class_str)
+    used_non_private_signatures_of_class_str = parser_utils.fix_type_parameters_inconsistences(used_non_private_signatures_of_class_str)
 
-    signatures_of_external_dependencies = focal_method['signatures_of_external_dependencies']
-    
+
     external_context = []
-    for ext_class_sig in signatures_of_external_dependencies:
-        signatures_by_ext_class = signatures_of_external_dependencies[ext_class_sig]
+
+    external_dependencies = focal_method['external_dependencies']
+    for ext_dep in external_dependencies:
+        ext_class_sig = ext_dep['class_signature']
         ext_class_sig_cleaned = clean_comments_in_code(parser_utils, ext_class_sig)
+        ext_class_sig_cleaned = clean_class_signature_annotations(parser_utils, ext_class_sig_cleaned)
+        ext_class_sig_cleaned = ext_class_sig_cleaned.replace("{", "") # En caso de que en el minado se extraiga como: public class Clase \n{
+        ext_class_sig_cleaned = parser_utils.fix_close_type_parameter_sig_class(ext_class_sig_cleaned)
+
+        code_to_validate_ext_class_sig = ext_class_sig_cleaned + " { }"
+        validate_code_ext_class_sig = parser_utils.validate_if_code_has_errors(code_to_validate_ext_class_sig, False)
+        if validate_code_ext_class_sig == True:
+            # print("\n\n\n\n")
+            # print(f"File error External Class Signature: {file} \n")
+            # print(ext_class_sig_cleaned)
+            # print("\n\n\n\n")
+            list_errors_external_class_sig.append(f"File error External Class Signature: {file} \n{ext_class_sig_cleaned}")
+            return None, None, None
+
+        ext_fields = ext_dep['fields']
+        ext_methods = ext_dep['methods']
+        signatures_by_ext_class = [field['original_string'] for field in ext_fields]
+        signatures_by_ext_class.extend([meth[key_method_for_extract] + ";" for meth in ext_methods])
+        
         signatures_by_ext_class_str = '\n'.join(signatures_by_ext_class)
         signatures_by_ext_class_str = clean_comments_in_code(parser_utils, signatures_by_ext_class_str)
-        
+        signatures_by_ext_class_str = parser_utils.fix_type_parameters_inconsistences(signatures_by_ext_class_str)
+        signatures_by_ext_class_str = clean_methods_signatures_annotations(parser_utils, signatures_by_ext_class_str)
+
+        code_to_validate_ext_sig = "public interface AnyClass { " + signatures_by_ext_class_str + " }" 
+        validate_code_ext_sig = parser_utils.validate_if_code_has_errors(code_to_validate_ext_sig, False)
+        if validate_code_ext_sig == True:
+            # print("\n\n\n\n")
+            # print(f"File error External Signatures: {file} \n")
+            # print(signatures_by_ext_class_str)
+            # print("\n\n\n\n")
+
+            list_errors_external_signatures.append(f"File error External Signatures: {file} \n\n{code_to_validate_ext_sig}")
+            return None, None, None
+
         format_src_ext_class = '{} {{ {} }}'
         src_ext_class = format_src_ext_class.format(ext_class_sig_cleaned, signatures_by_ext_class_str)
-        #src_ext_class = clean_comments_in_code(parser_utils, src_ext_class)
-        external_context.append(src_ext_class)
+        # src_ext_class = clean_comments_in_code(parser_utils, src_ext_class)
+        src_ext_class = clean_tabs_and_new_lines(src_ext_class)
+        external_context.append(tag_external_context_start + src_ext_class + tag_external_context_end)
+
+    if len(external_context) == 0:
+        src_external_context = tag_external_context_start + tag_external_context_end
+    else:
+        src_external_context = ' '.join(external_context).strip()
+
+    # signatures_of_external_dependencies = focal_method['signatures_of_external_dependencies']
     
-    external_context_str = '\n'.join(external_context).strip()
-    external_context_str = clean_comments_in_code(parser_utils, external_context_str)
-    src_external_context = tag_external_context_start + external_context_str + tag_external_context_end
+    # external_context = []
+    # for ext_class_sig in signatures_of_external_dependencies:
+    #     signatures_by_ext_class = signatures_of_external_dependencies[ext_class_sig]
+    #     ext_class_sig_cleaned = clean_comments_in_code(parser_utils, ext_class_sig)
+    #     signatures_by_ext_class_str = '\n'.join(signatures_by_ext_class)
+    #     signatures_by_ext_class_str = clean_comments_in_code(parser_utils, signatures_by_ext_class_str)
+        
+    #     format_src_ext_class = '{} {{ {} }}'
+    #     src_ext_class = format_src_ext_class.format(ext_class_sig_cleaned, signatures_by_ext_class_str)
+    #     #src_ext_class = clean_comments_in_code(parser_utils, src_ext_class)
+    #     external_context.append(src_ext_class)
+    
+    # external_context_str = '\n'.join(external_context).strip()
+    # external_context_str = clean_comments_in_code(parser_utils, external_context_str)
+    # src_external_context = tag_external_context_start + external_context_str + tag_external_context_end
+
+    focal_sigs = f"{used_non_private_signatures_of_class_str} {used_private_signatures_of_class_str} {non_private_fields_str} {constructors_str} {non_private_methods_str}"
+    code_to_validate_focal_sig = "public interface AnyClass { " + focal_sigs + " }" 
+    validate_code_focal_sig = parser_utils.validate_if_code_has_errors(code_to_validate_focal_sig, False)
+    if validate_code_focal_sig == True:
+        # print("\n\n\n\n")
+        # print(f"File error Focal Signatures: {file} \n")
+        # print(code_to_validate_focal_sig)
+        # print("\n\n\n\n")
+        list_errors_focal_signatures.append(f"File error Focal Signatures: {file} \n\n{code_to_validate_focal_sig}")
+        return None, None, None
 
 
     format_src_fm_fc_dctx = '{}{} {{ {} {} {} }}{} {}'
@@ -410,6 +554,7 @@ def build_format_corpus(parser_utils: ParserUtils,
         src_external_context
     )
     src_fm_fc_dctx = clean_tabs_and_new_lines(src_fm_fc_dctx)
+    src_fm_fc_dctx = src_fm_fc_dctx.replace(" . ", ".").replace(". ", ".").replace(" .", ".").replace("( ", "(").replace(" )", ")").replace("[ ", "[").replace(" ]", "]")
 
 
     format_src_fm_fc_dctx_priv = '{}{} {{ {} {} {} }}{} {}'
@@ -422,9 +567,35 @@ def build_format_corpus(parser_utils: ParserUtils,
         tag_focal_context_end, 
         src_external_context
     )
-    src_fm_fc_dctx_priv = clean_tabs_and_new_lines(src_fm_fc_dctx_priv).strip()
+    src_fm_fc_dctx_priv = clean_tabs_and_new_lines(src_fm_fc_dctx_priv)
+    src_fm_fc_dctx_priv = src_fm_fc_dctx_priv.replace(" . ", ".").replace(". ", ".").replace(" .", ".").replace("( ", "(").replace(" )", ")").replace("[ ", "[").replace(" ]", "]")
 
     return src_fm_fc_ms_ff, src_fm_fc_dctx, src_fm_fc_dctx_priv
+
+
+
+def build_class_signature(parser_utils: ParserUtils, class_dict: dict) -> str:
+    class_name = class_dict['class_name']
+    extends = class_dict['superclass']
+    implements = class_dict['interfaces']
+
+    class_signature: str = class_dict['class_signature'].strip()
+    class_signature = clean_comments_in_code(parser_utils, class_signature)
+    class_signature = clean_class_signature_annotations(parser_utils, class_signature)
+    class_signature = class_signature.replace("{", "")
+
+    index = class_signature.find(class_name)
+
+    if index != -1:
+        modifiers_and_type = class_signature[:index]
+        format_class_signature = '{} {} {} {}'
+        class_signature = format_class_signature.format(modifiers_and_type, class_name, extends, implements).strip()
+
+    # class_signature = clean_comments_in_code(parser_utils, class_signature)
+    # class_signature = clean_class_signature_annotations(parser_utils, class_signature)
+    # class_signature = class_signature.replace("{", "")
+
+    return class_signature
 
 
 def clean_comments_in_code(parser_utils: ParserUtils, body_src: str) -> str:
@@ -439,6 +610,16 @@ def clean_tabs_and_new_lines(code: str) -> str:
     # Reemplaza múltiples espacios por un solo espacio
     src_clean = re.sub(r'\s{2,}', ' ', src_clean)
     return src_clean.strip()
+
+
+def clean_class_signature_annotations(parser_utils: ParserUtils, signature: str) -> str:
+    modified_code = parser_utils.clean_annotations(signature)
+    return modified_code.strip()
+
+
+def clean_methods_signatures_annotations(parser_utils: ParserUtils, signature: str) -> str:
+    modified_code = parser_utils.clean_signatures_annotations(signature)
+    return modified_code.strip()
 
 
 def parse_args():
@@ -525,7 +706,8 @@ def main():
     tag_private_focal_context_start = args['tag_private_focal_context_start']
     tag_private_focal_context_end = args['tag_private_focal_context_end']
 
-    list_projects_d4j = ['Csv', 'Cli', 'Lang', 'Chart', 'Gson']
+    # list_projects_d4j = ['Csv', 'Cli', 'Lang', 'Chart', 'Gson']
+    list_projects_d4j = ['Closure', 'Cli', 'Codec', 'Collections', 'Compress', 'Csv', 'JxPath', 'Lang', 'Math', 'Gson', 'JacksonCore', 'JacksonDatabind', 'JacksonXml', 'Chart', 'Time', 'Jsoup', 'Mockito']
 
     if project_id == 'all':
         projects_paths = {}
@@ -552,8 +734,10 @@ def main():
 
     start_time = time.time()
 
+    total_methods_by_project: dict[str, int] = {}
+    total_methods = 0
     for project_name in projects_paths:
-        build_corpus(
+        total_methods_project = build_corpus(
             input_dataset, 
             input_encoding, 
             project_name,
@@ -566,6 +750,28 @@ def main():
             tag_private_focal_context_start,
             tag_private_focal_context_end
         )
+
+        total_methods_by_project[project_name] = total_methods_project
+        total_methods += total_methods_project
+
+    total_syntax_errors = (
+        len(list_errors_methods_source) 
+        + len(list_errors_focal_class_sig) 
+        + len(list_errors_external_class_sig) 
+        + len(list_errors_focal_signatures) 
+        + len(list_errors_external_signatures)
+    )
+
+    print(f"\n\nCount list_errors_methods_source: {len(list_errors_methods_source)}")
+    print(f"Count list_errors_focal_class_sig: {len(list_errors_focal_class_sig)}")
+    print(f"Count list_errors_external_class_sig: {len(list_errors_external_class_sig)}")
+    print(f"Count list_errors_focal_signatures: {len(list_errors_focal_signatures)}")
+    print(f"Count list_errors_external_signatures: {len(list_errors_external_signatures)}")
+    print(f"Count Total sync errors: {total_syntax_errors}")
+
+    print(f"\n\nTotal methods in corpus: {total_methods}")
+    for proj, tot_meths in total_methods_by_project.items():
+        print(f"{proj}: {tot_meths}")
 
     end_time = time.time()
     elapsed_time = end_time - start_time

@@ -561,18 +561,21 @@ class ClassParser():
                         #print(f"Comment in method modifier {metadata['modifiers']} => {line_comment_str}")
                         #print("\n\n")
                         metadata['modifiers'] = metadata['modifiers'].replace(line_comment_str, "").strip()
+                continue
             
             if child.type == "type_parameters":
                 metadata['type_parameters'] = ClassParser.match_from_span(child, blob)
+                continue
             
-            #if "type" in child.type and child.type != "type_parameters":
-            if "type" in child.type: # void_type, boolean_type, integral_type, type_identifier, etc.
+            if "type" in child.type and child.type != "type_parameters":
+            #if "type" in child.type: # void_type, boolean_type, integral_type, type_identifier, etc.
                 metadata['return'] = ClassParser.match_from_span(child, blob)
+                continue
         
         #Signature
-        format_signature = '{}{}{}{}' if metadata['is_constructor'] == True else ('{}{} {}{}' if metadata['type_parameters'] == "" else '{} {} {}{}')
-        format_full_signature = '{}{} {}{}{}' if metadata['is_constructor'] == True else ('{}{} {} {}{}' if metadata['type_parameters'] == "" else '{} {} {} {}{}')
-        format_full_signature_parameters = '{}{} {}{}' if metadata['is_constructor'] == True else ('{}{} {} {}' if metadata['type_parameters'] == "" else '{} {} {} {}')
+        format_signature = '{} {}{}{}' if metadata['is_constructor'] == True and metadata['type_parameters'] != "" else ('{}{}{}{}' if metadata['is_constructor'] == True else ('{}{} {}{}' if metadata['type_parameters'] == "" else '{} {} {}{}'))
+        format_full_signature = '{} {} {}{}{}' if metadata['is_constructor'] == True and metadata['type_parameters'] != "" else ('{}{} {}{}{}' if metadata['is_constructor'] == True else ('{}{} {} {}{}' if metadata['type_parameters'] == "" else '{} {} {} {}{}'))
+        format_full_signature_parameters = '{} {} {}{}' if metadata['is_constructor'] == True and metadata['type_parameters'] != "" else ('{}{} {}{}' if metadata['is_constructor'] == True else ('{}{} {} {}' if metadata['type_parameters'] == "" else '{} {} {} {}'))
         
         metadata['signature'] = format_signature.format(metadata['type_parameters'], metadata['return'], metadata['method_name'], full_parameters_str).strip()
         metadata['full_signature'] = format_full_signature.format(metadata['modifiers'], metadata['type_parameters'], metadata['return'], metadata['method_name'], full_parameters_str).strip()
@@ -1703,6 +1706,7 @@ class ClassParser():
         return [child for child in node.children if child.type in types]
     
 
+    # Este metodo no siempre obtiene la firma de la clase completa
     @staticmethod
     def get_class_full_signature(class_node, blob: str):
         """

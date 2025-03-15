@@ -20,10 +20,13 @@ import glob
 from dependency_parser_utils import DependencyParserUtils
 
 
-def get_class_path(start_path, filename):
+def get_class_path(start_path: str, filename: str, path_focal_class: str) -> str:
     for root, dirs, files in os.walk(start_path):
         if filename in files:
-            return(os.path.join(root, filename))
+            path_find = os.path.join(root, filename)
+            if path_find.endswith(path_focal_class):
+                return path_find
+    return None
 
 
 def copy_error_files(path_by_type_error, project_name_version, output_empty, dataset_out, files):
@@ -33,25 +36,46 @@ def copy_error_files(path_by_type_error, project_name_version, output_empty, dat
         shutil.copy(os.path.join(dataset_out, file), dir_empty_by_type_error)
 
 
-def analyze_project(project_path: str, project_id: str, focal_classes_content: list, output: str, output_empty: str):
+def analyze_project(project_path: str, 
+                    project_id: str, 
+                    focal_classes_content: list[dict], 
+                    test_and_src_paths_by_project_and_version: dict[str, dict[str, str]], 
+                    output: str, 
+                    output_empty: str):
     """
     Analyze a single project
     """
     #directories = project_path.split("/")
     #last_directory = "/".join(directories[:-1]).strip()
-    project_name_version = os.path.split(project_path)[1]
+    project_name_version = os.path.split(project_path)[-1]
 
     #Create folders
     #d4j_project_id_path = os.path.join(output, str(project_id))
     #os.makedirs(d4j_project_id_path, exist_ok=True)
     #dataset_out = os.path.join(d4j_project_id_path, str(last_directory))
     dataset_out = os.path.join(output, str(project_name_version))
+    
+    # if "Time_27_f" != project_name_version:
+    #     return
+    # print(f"\n\nproject_path: {project_path}\n\n")
+    
+    # print(f"project_name_version: {project_name_version} -> dataset_out: {dataset_out}")
+    # return
+
     os.makedirs(dataset_out, exist_ok=True)
 
     #Run analysis
     language = 'java'
     print(f"Extracting and mapping classes from project {project_id} ({project_name_version})...")
-    result_analyze_project = find_focal_classes(project_path, language, dataset_out, project_id, project_name_version, focal_classes_content)
+    result_analyze_project = find_focal_classes(
+        project_path, 
+        language, 
+        dataset_out, 
+        project_id, 
+        project_name_version, 
+        focal_classes_content, 
+        test_and_src_paths_by_project_and_version
+    )
     (tot_fclasses, tot_mfm_by_focal, tot_mfm, repo_exists, error_finding_java_files) = result_analyze_project
 
     if tot_mfm == 0:
@@ -74,7 +98,13 @@ def analyze_project(project_path: str, project_id: str, focal_classes_content: l
     print()
 
 
-def find_focal_classes(root, language, output, project_id: str, project_name_version: str, focal_classes_content: list):
+def find_focal_classes(root, 
+                       language, 
+                       output, 
+                       project_id: str, 
+                       project_name_version: str, 
+                       focal_classes_content: list[dict], 
+                       test_and_src_paths_by_project_and_version: dict[str, dict[str, str]]):
     """
     Find all classes exclude tests
     Finds test cases using @Test annotation
@@ -188,25 +218,40 @@ def find_focal_classes(root, language, output, project_id: str, project_name_ver
     log_error_mapping.write("==================================================" + '\n')
     has_error_mapping = False
 
-    classes_from_focal_classes_content = []
+    classes_from_focal_classes_content: list[str] = []
     for repo in focal_classes_content:
         if repo['project'] == project_name_version:
             classes_from_focal_classes_content = repo['classes']
     
-    #print("\n\nList classes_from_focal_classes_content: " + str(len(classes_from_focal_classes_content)))
-    #print(classes_from_focal_classes_content)
-    #print("")
+    # print("\n\nList classes_from_focal_classes_content: " + str(len(classes_from_focal_classes_content)))
+    # print(classes_from_focal_classes_content)
+    # print("")
 
-    paths_from_focal_classes_content = []
+    project_name_version_without_suffix = project_name_version
+    project_name_version_without_suffix = project_name_version_without_suffix.replace("_f", "").replace("_b", "").lower()
+    test_and_src_paths = test_and_src_paths_by_project_and_version[project_name_version_without_suffix]
+    project_src_path = "" if test_and_src_paths is None else test_and_src_paths["src"]
+    if project_src_path is None: # En caso de que project_src_path no contenga 'src'
+        project_src_path = ""
+
+
+    paths_from_focal_classes_content: list[str] = []
     for _class in classes_from_focal_classes_content:
-        basename_path = os.path.basename(_class.rstrip('\n').replace('.', '/')+'.java')
-        class_path = get_class_path(root, basename_path)
+        path_focal_class = _class.rstrip('\n').replace('.', '/')  + '.java'
+        basename_from_path = os.path.basename(path_focal_class)
+        # Add src_path to focal_class_path
+        path_focal_class = os.path.join(project_src_path, path_focal_class)
+        # print("basename:" + basename_from_path)
+        class_path = get_class_path(root, basename_from_path, path_focal_class)
+        if class_path is None:
+            continue
+        # if sys.platform == "win32" or os.name == "nt":
         class_path = class_path.replace("\\", "/") # For Windows
         paths_from_focal_classes_content.append(class_path)
 
-    #print("\n\nList paths_from_focal_classes_content: " + str(len(paths_from_focal_classes_content)))
-    #print(paths_from_focal_classes_content)
-    #print("")
+    # print("\n\nList paths_from_focal_classes_content: " + str(len(paths_from_focal_classes_content)))
+    # print(paths_from_focal_classes_content)
+    # print("")
 
     for focal in tqdm(focals, leave=True, desc="Extract info from Focal Classes (" + project_name_version + ")"):
         match_focal_class_to_extract = True
@@ -301,14 +346,15 @@ def parse_focal_methods(parser: ClassParser, dependency_parser: DependencyClassP
 
         for parsed_method in parsed_class['methods']:
             method = dict(parsed_method)
+            # if (not method['is_testcase'] 
+            #         and not method['is_constructor'] 
+            #         and not 'private' in method['modifiers']
+            #         and not 'protected' in method['modifiers']
+            #         and not 'abstract' in method['modifiers']):
             if (not method['is_testcase'] 
-                    and not method['is_constructor'] 
-                    and not 'private' in method['modifiers']
-                    #and not 'protected' in method['modifiers']
-                    and not 'abstract' in method['modifiers']):
-            #if (not method['is_testcase'] 
-            #        and not method['is_constructor']
-            #        and 'public' in method['modifiers']):
+                   and not method['is_constructor']
+                   and not 'abstract' in method['modifiers']
+                   and 'public' in method['modifiers']):
                 #Class Info
                 focal_class = dict(parsed_class)
                 focal_class.pop('argument_list')
@@ -389,7 +435,11 @@ def analyze_project_wrapper(args):
     return 1
 
 
-def analyze_projects(projects_paths: list[dict], focal_classes_content: list, output: str, output_empty: str):
+def analyze_projects(projects_paths: dict[str, list[str]], 
+                     focal_classes_content: list[dict], 
+                     test_and_src_paths_by_project_and_version: dict[str, dict[str, str]], 
+                     output: str, 
+                     output_empty: str):
     """
     Analyze a list of projects
     """
@@ -405,9 +455,9 @@ def analyze_projects(projects_paths: list[dict], focal_classes_content: list, ou
         list_paths_by_project = projects_paths[project_id]
 
         with Pool(num_cpus) as pool:
-            with tqdm(total=len(list_paths_by_project), leave=True, desc="Analyzing projects") as pbar:
+            with tqdm(total=len(list_paths_by_project), leave=True, desc=f"Analyzing versions of project {project_id}") as pbar:
                 # Crea una lista de argumentos para cada llamada a analyze_project
-                args_list = [(project_path, project_id, focal_classes_content, output, output_empty) for project_path in list_paths_by_project]
+                args_list = [(project_path, project_id, focal_classes_content, test_and_src_paths_by_project_and_version, output, output_empty) for project_path in list_paths_by_project]
                 for _ in pool.imap_unordered(analyze_project_wrapper, args_list):
                     pbar.update()
 
@@ -446,6 +496,13 @@ def parse_args():
         help="Json file with classes by project version",
     )
     parser.add_argument(
+        "--test_and_src_paths_json_file",
+        type=str,
+        #default="/tmp/output_empty/",
+        default="E:/000_Tesis/custom_scripts_d4j/test_and_src_paths_by_project.json",
+        help="Json file with test and src paths by project version",
+    )
+    parser.add_argument(
         "--extract_only_focal_classes",
         type=bool,
         #default="/tmp/output_empty/",
@@ -476,6 +533,7 @@ def main():
     project_id = args['project_id']
     extract_only_focal_classes = args['extract_only_focal_classes']
     focal_classes_json_file = args['focal_classes_json_file']
+    test_and_src_paths_json_file = args['test_and_src_paths_json_file']
     output = args['output']
     output_empty = args['output_empty']
 
@@ -491,7 +549,12 @@ def main():
             focal_classes_content = json.load(f)
         list_projects_version_names = [repo['project'] for repo in focal_classes_content]
 
-    list_projects_d4j = ['Csv', 'Cli', 'Lang', 'Chart', 'Gson']
+    test_and_src_paths_by_project_and_version: dict[str, dict[str, str]] = {}
+    with open(test_and_src_paths_json_file, 'r') as f:
+        test_and_src_paths_by_project_and_version = json.load(f)
+
+    # list_projects_d4j = ['Csv', 'Cli', 'Lang', 'Chart', 'Gson']
+    list_projects_d4j = ['Closure', 'Cli', 'Codec', 'Collections', 'Compress', 'Csv', 'JxPath', 'Lang', 'Math', 'Gson', 'JacksonCore', 'JacksonDatabind', 'JacksonXml', 'Chart', 'Time', 'Jsoup', 'Mockito']
     
     if project_id == 'all':
         projects_paths = {}
@@ -520,8 +583,9 @@ def main():
             #projects_paths_list.append(path_project)
 
     print(f"Total repos to analyze: {str(i)}")
+    # print(projects_paths)
 
-    analyze_projects(projects_paths, focal_classes_content, output, output_empty)
+    analyze_projects(projects_paths, focal_classes_content, test_and_src_paths_by_project_and_version, output, output_empty)
     
  
 if __name__ == '__main__':

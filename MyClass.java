@@ -85,6 +85,10 @@ public class MyClass<T> extends Parent implements IAction, Clonable {
 
     private MyClass otherClass;
 
+    public <T> MyClass(String param) {
+        
+    }
+
     
     @Test
     public <T> void testSerialization(@Size Map.Entry<String, @Nullable String> entry, MyClass myClass, Map<String, Object> map, Integer someInteger, @NotNull int value[], Type... type) {

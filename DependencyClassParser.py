@@ -106,12 +106,22 @@ class DependencyClassParser():
         metadata = {
             'class_name': class_name,
             'external_dependency' : external_dependency,
+            'superclass': '',
+            'interfaces': '',
             'class_signature': '',
             'class_modifier': '',
             'has_constructor': '',
             'fields': '',
             'methods': '',
         }
+
+        superclass = class_node.child_by_field_name('superclass')
+        if superclass:
+            metadata['superclass'] = DependencyClassParser.match_from_span(superclass, blob)
+        
+        interfaces = class_node.child_by_field_name('interfaces')
+        if interfaces:
+            metadata['interfaces'] = DependencyClassParser.match_from_span(interfaces, blob)
 
         metadata['class_signature'] = DependencyClassParser.get_class_full_signature(class_node, blob)
 
@@ -244,19 +254,22 @@ class DependencyClassParser():
                         #print(f"Comment in external method modifier {metadata['modifiers']} => {line_comment_str}")
                         #print("\n\n")
                         metadata['modifiers'] = metadata['modifiers'].replace(line_comment_str, "").strip()
+                continue
             
             if child.type == "type_parameters":
                 metadata['type_parameters'] = DependencyClassParser.match_from_span(child, blob)
+                continue
             
-            #if "type" in child.type and child.type != "type_parameters":
-            if "type" in child.type: # void_type, boolean_type, integral_type, type_identifier, etc.
+            if "type" in child.type and child.type != "type_parameters":
+            #if "type" in child.type: # void_type, boolean_type, integral_type, type_identifier, etc.
                 metadata['return'] = DependencyClassParser.match_from_span(child, blob)
+                continue
         
         #Signature
         format_signature = '{}{}{}{}' if metadata['is_constructor'] == True else ('{}{} {}{}' if metadata['type_parameters'] == "" else '{} {} {}{}')
-        format_full_signature = '{}{} {}{}{}' if metadata['is_constructor'] == True else ('{}{} {} {}{}' if metadata['type_parameters'] == "" else '{} {} {} {}{}')
-        format_full_signature_parameters = '{}{} {}{}' if metadata['is_constructor'] == True else ('{}{} {} {}' if metadata['type_parameters'] == "" else '{} {} {} {}')
-
+        format_full_signature = '{} {} {}{}{}' if metadata['is_constructor'] == True and metadata['type_parameters'] != "" else ('{}{} {}{}{}' if metadata['is_constructor'] == True else ('{}{} {} {}{}' if metadata['type_parameters'] == "" else '{} {} {} {}{}'))
+        format_full_signature_parameters = '{} {} {}{}' if metadata['is_constructor'] == True and metadata['type_parameters'] != "" else ('{}{} {}{}' if metadata['is_constructor'] == True else ('{}{} {} {}' if metadata['type_parameters'] == "" else '{} {} {} {}'))
+        
         metadata['signature'] = format_signature.format(metadata['type_parameters'], metadata['return'], metadata['method_name'], full_parameters_str).strip()
         metadata['full_signature'] = format_full_signature.format(metadata['modifiers'], metadata['type_parameters'], metadata['return'], metadata['method_name'], full_parameters_str).strip()
         metadata['full_signature_parameters'] = format_full_signature_parameters.format(metadata['modifiers'], metadata['type_parameters'], metadata['return'], metadata['parameters']).strip()

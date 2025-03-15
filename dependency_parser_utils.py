@@ -414,6 +414,8 @@ class DependencyParserUtils():
             ext_dep_metadata = {
                 'class_name': parsed_class_ext_dep['class_name'],
                 'external_dependency' : parsed_class_ext_dep['external_dependency'],
+                'superclass': parsed_class_ext_dep['superclass'],
+                'interfaces': parsed_class_ext_dep['interfaces'],
                 'class_signature': parsed_class_ext_dep['class_signature'],
                 'has_constructor': parsed_class_ext_dep['has_constructor'],
                 'fields': dependency_fields,
