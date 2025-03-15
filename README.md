@@ -1,5 +1,7 @@
 # DynaMTests: Dynamic context Mapped Tests
 
+## Description
+
 We present **DynaMTests**: a supervised dataset consisting of Test Cases and their corresponding Focal Methods together with their dynamic context (methods and fields used within the focal method, both from the focal class as well as from external classes) from a large set of Java software repositories. To build DynaMTests, we follow the following process:
 
 1. We analyze Java projects to obtain classes and methods with their associated metadata.
@@ -7,13 +9,13 @@ We present **DynaMTests**: a supervised dataset consisting of Test Cases and the
 2. We identify each test class and its corresponding focal class.
 
 3. For each test case within a test class, we map it to the related focal method and obtain a set of mapped test cases. We do this as follows:
-
- a. We identify as test case all the methods within a test class that have the @Test annotation (we identify as test class, all those classes that within their code have the `@Test` annotation).
- 
- b. We identify the focal method for a specific test case through the following heuristics:
- - *Class Name Matching*: we look for classes that have the same name as the test class, but without the prefix or suffix Test.
- - *Method Name Matching*: Within the focal class identified in the previous step, we look for the methods that have the same name as the test method but without the prefix or suffix Test.
- - *Unique Method Call*: If with the previous heuristic we do not obtain a result, we obtain the methods of the focal class previously identified that are invoked from the test method, and in case we obtain only one method, we select it as the focal method.
+   
+   1. We identify as test case all the methods within a test class that have the @Test annotation (we identify as test class, all those classes that within their code have the `@Test` annotation).
+   
+   2. We identify the focal method for a specific test case through the following heuristics:
+      1. *Class Name Matching*: we look for classes that have the same name as the test class, but without the prefix or suffix Test.
+      2. *Method Name Matching*: Within the focal class identified in the previous step, we look for the methods that have the same name as the test method but without the prefix or suffix Test.
+      3. *Unique Method Call*: If with the previous heuristic we do not obtain a result, we obtain the methods of the focal class previously identified that are invoked from the test method, and in case we obtain only one method, we select it as the focal method.
 
 4. For each focal method, we associate a metadata representing its dynamic context.
 
@@ -114,9 +116,41 @@ test_case: properties of the unit test case
 
 The corpus folder contains the parallel corpus of focal methods and test cases, as json, raw, and csv, suitable for training and evaluation of the model.
 
-El corpus está organizado en dos tipos de contexto: contexto focal (similar al enfoque usado en Methods2Test) y contexto dinámico, el cual es el enfoque que proponemos nosotros. La información que incluye cada tipo de contexto es la siguiente:
+The corpus is organized into two types of context: focal context (*fm_fc_ms_ff*) (similar to the approach used in [Methods2Test](https://arxiv.org/abs/2203.12776 "Methods2Test arXiv paper")) and dynamic context (*fm_fc_dctx*), which is the approach we propose. The information included in each type of context is as follows:
 
-- **FM_fFC_DCTX**: focal method + focal class name + constructor signatures + signatures of focal methods used (private and non-private) + focal class fields used + (private and non-private) + [for each external class used: {external class name + constructor signatures + signatures of external methods used + external class fields used}]
+- **FM_FC_DCTX**: focal method + focal class name + constructor signatures + signatures of focal methods used (private and non-private) + focal class fields used + (private and non-private) + [for each external class used: {external class name + constructor signatures + signatures of external methods used + external class fields used}]
 
 - **FM_FC_MS_FF**: focal method + focal class name + constructor signatures + public method signatures + public fields
+
+
+
+## Statistics
+
+A total of 91,385 unique repositories were analyzed, from which 904,870 test cases mapped to their corresponding focal method (and their dynamic context) were obtained in the first instance. However, 2 purging processes were performed in order to obtain the dataset and subsequently the corpus:
+
+1. To obtain the dataset, duplicate `test_case-focal_method` pairs were removed from mined repositories.
+2. To obtain the corpus, the previously purged dataset was subjected to several normalization processes (e.g., removing code comments, removing line breaks, etc.) and those with syntax errors, those without a body in the test case, those with the `@Ignored` annotation and those that were duplicated in our corpus generated for the [Defects4J](https://github.com/rjust/defects4j "Defects4J GitHub Repo") dataset projects were removed.
+
+### Dataset statistics
+
+The dataset contains 790,490 test cases mapped to their corresponding focal method (and their dynamic context), extracted from 9,351 unique repositories (of the total 91,385 repositories analyzed). The dataset is divided into training (~82%), validation (~8.6%) and test (~9.4%) sets:
+
+| Set           | Repositories  | Mapped TestCases |
+| :------------ | ------------: | ------------:    |
+| Train         | 7,407         | 652,308          |
+| Validation    | 923           | 68,102           |
+| Test          | 1,021         | 74,716           |
+| **Total**     | **9,351**     | **795,126**      |
+
+### Corpus statistics
+
+The corpus contains 772,140 test cases mapped to their corresponding focal method (and their dynamic context), and like the dataset, is divided into training (~81.8 %), validation (~8.7 %) and test (~9.5 %) sets:
+
+| Set           | Repositories  | Mapped TestCases |
+| :------------ | ------------: | ------------:    |
+| Train         | 7,407         | 631,540          |
+| Validation    | 923           | 67,201           |
+| Test          | 1,021         | 73,399           |
+| **Total**     | **9,351**     | **772,140**      |
+
 
