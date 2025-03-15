@@ -53,61 +53,61 @@ focal_class: properties of the focal class
     class_name: string, class name
     superclass: string, superclass definition
     interfaces: string, interface definition
-	class_signature: string, full class signature definition
-	class_modifier: string, class modifiers
-	has_constructor: boolean, whether the class has some defined constructor
+    class_signature: string, full class signature definition
+    class_modifier: string, class modifiers
+    has_constructor: boolean, whether the class has some defined constructor
     fields: list, class fields
     methods: list, class methods
-	imports: list, class imports
-	package: string, package to which the class belongs
+    imports: list, class imports
+    package: string, package to which the class belongs
     file: string, relative path (inside the repository) to file containing the focal class
 
 focal_method: properties of the focal method
     method_name: string, focal method name 
     parameters: string, name method with parameter types list of the focal method
-	parameters_list: list, parameter types list of the focal method
+    parameters_list: list, parameter types list of the focal method
     modifiers: string, method modifiers
     return: string, return type
     body: string, source code of the focal method
     signature: string, focal method signature (return type + name + parameters)
     full_signature: string, focal method signature (modified + return type + name + parameters)
-	full_signature_parameters: string, focal method signature (modified + return type + name + type parameters)
+    full_signature_parameters: string, focal method signature (modified + return type + name + type parameters)
     class_method_signature: string, focal method signature (class + name + parameters)
     is_testcase: boolean, whether the method is a test case
-	test_use_mockito: boolean, whether the method use mockito API
+    test_use_mockito: boolean, whether the method use mockito API
     is_constructor: boolean, whether the method is a constructor
-	is_get_or_set: boolean, whether the method is a getter o setter
+    is_get_or_set: boolean, whether the method is a getter o setter
     class_private_deps_used: object with list of private fields and methods used from focal method
-	class_non_private_deps_used: object with list of non private fields and methods used from focal method
-	external_dependencies: list of external classes used from the focal method (each with the respective list of fields and methods invoked from the focal method)
+    class_non_private_deps_used: object with list of non private fields and methods used from focal method
+    external_dependencies: list of external classes used from the focal method (each with the respective list of fields and methods invoked from the focal method)
 
 test_class:  properties of the test class containing the test case
     class_name: string, class name
     superclass: string, superclass definition
     interfaces: string, interface definition
-	class_signature: string, full class signature definition
-	class_modifier: string, class modifiers
-	has_constructor: boolean, whether the class has some defined constructor
+    class_signature: string, full class signature definition
+    class_modifier: string, class modifiers
+    has_constructor: boolean, whether the class has some defined constructor
     fields: list, class fields
-	imports: list, class imports
-	package: string, package to which the class belongs
+    imports: list, class imports
+    package: string, package to which the class belongs
     file: string, relative path (inside the repository) to file containing the test class
 
 test_case: properties of the unit test case
     method_name: string, unit test case method name
     parameters: string, name method with parameter types list of the test case method
-	parameters_list: list, parameter types list of the test case method
+    parameters_list: list, parameter types list of the test case method
     modifiers: string, method modifiers
     return: string, return type
     body: string, source code of the focal method
     signature: string, focal method signature (return type + name + parameters)
     full_signature: string, focal method signature (modified + return type + name + parameters)
-	full_signature_parameters: string, focal method signature (modified + return type + name + type parameters)
+    full_signature_parameters: string, focal method signature (modified + return type + name + type parameters)
     class_method_signature: string, focal method signature (class + name + parameters)
     is_testcase: boolean, whether the method is a test case
-	test_use_mockito: boolean, whether the method use mockito API
+    test_use_mockito: boolean, whether the method use mockito API
     is_constructor: boolean, whether the method is a constructor
-	is_get_or_set: boolean, whether the method is a getter o setter
+    is_get_or_set: boolean, whether the method is a getter o setter
 ```
 
 ### Corpus
