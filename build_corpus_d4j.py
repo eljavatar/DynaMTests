@@ -636,8 +636,8 @@ def parse_args():
     parser.add_argument(
         "--input_encoding", 
         type=str, 
-        default="cp1252",
-        #default="utf-8",
+        # default="cp1252",
+        default="utf-8",
         help="Encoding of the inputs json files (It depends on the OS where the dataset was built: Windows=cp1252, Unix/Linux=utf-8)",
     )
     parser.add_argument(

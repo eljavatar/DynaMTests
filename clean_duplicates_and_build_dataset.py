@@ -66,6 +66,10 @@ def get_total_repos(path: str):
 
 
 def extract_uniques(type_dataset: str, unique_all_tests: set, unique_all_focal_methods: set, path_in: str, path_out: str):
+    if not os.path.exists(path_in):
+        print(f"Not exists path: {path_in}")
+        return 0, 0
+    
     total_repos = get_total_repos(path_in)
     print(f"Total repos in mining results {path_in}: {str(total_repos)}")
 
