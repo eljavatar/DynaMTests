@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: Barragán Sarmiento
+  given-names: Andrés Mauricio
+  orcid: https://orcid.org/0009-0005-6931-9081
+title: "DynaMTests: Dynamic context Mapped Tests"
+version: v1.0.0
+doi: 10.5281/zenodo.15055078
+date-released: 2025-03-20
+url: "https://doi.org/10.5281/zenodo.15055078"
