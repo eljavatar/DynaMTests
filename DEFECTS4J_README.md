@@ -7,9 +7,25 @@ For this reason we built a corpus from the Defects4J dataset, since in addition 
 
 ## Description
 
-[Defects4J](https://github.com/rjust/defects4j/tree/v2.1.0) is a dataset that collects bug information for 17 Java projects. Each project consists of several bugs, so that for each bug we have two versions of the project: one version with the bug active and another version with the bug fixed.
+[Defects4J](https://github.com/rjust/defects4j/tree/v2.0.1) is a dataset that collects bug information for 17 Java projects. Each project consists of several bugs, so that for each bug we have two versions of the project: one version with the bug active and another version with the bug fixed.
 
 To build our corpus from the Defects4J dataset and using our approach of extracting the dynamic context of each focal method, only the versions with the fixed bugs were taken into account. For each bug, Defects4J contains information about the classes that were modified to fix it, and thus, we built this corpus by extracting the focal methods only from those modified classes.
+
+
+## Accessing via Git LFS
+
+The repository makes use of the Git large file storage (LFS) service. Git LFS does replacing large files in the repository with tiny pointer files. To pull the actual files do:
+
+```shell
+# first, clone the repo
+git clone git@github.com:eljavatar/DynaMTests.git
+# next, change to the DynaMTests folder
+cd DynaMTests
+# finally, pull the files
+git lfs pull
+```
+
+The Defects4J corpus we built is located in the [defects4j_corpus](defects4j_corpus) folder of this repository, however, in case you want to build a new one (for example with new versions of Defects4J, or using other focal classes), the following is the process we followed to build it.
 
 
 
@@ -17,7 +33,7 @@ To build our corpus from the Defects4J dataset and using our approach of extract
 
 To build the corpus it is necessary to make the necessary configurations to be able to use the commands of the framework provided by Defects4J. For this there are two options:
 
-1. **Configuration from scratch:** for this option, you must access the [Defects4J](https://github.com/rjust/defects4j/tree/v2.1.0) repository, and follow the instructions detailed there. In our case we use version `2.1.0` (although Defects4J already has 3.x.x versions which support Java 11).
+1. **Configuration from scratch:** for this option, you must access the [Defects4J](https://github.com/rjust/defects4j/tree/v2.0.1) repository, and follow the instructions detailed there. In our case we use version `2.0.1` (although Defects4J already has 3.x.x versions which support Java 11).
 
 2. **Use our Docker image:** We have created a docker image which contains the necessary dependencies and scripts that we use to generate this corpus. To download our docker image, use the following instruction:
 
@@ -64,7 +80,7 @@ The scripts that must be in this folder are the following:
 # Create the folder /defects4j/framework/custom
 cd /defects4j/framework
 mkdir custom
-# In this folder should be copied the files found in the d4_utils folder of this repository
+# In this folder should be copied the files found in the 'd4_utils' folder of this repository
 ```
 
 
@@ -144,8 +160,8 @@ Finally, to generate the corpus in csv format, the following instructions are fo
 cd /defects4j/framework/custom
 # Execute the following Script:
 ./build_all_csv_corpus_d4j.sh \
-    -d /defects4j_with_dynamtests/corpus/data_by_project_and_version \
-    -o /defects4j_with_dynamtests/corpus/csv \
-    -t /tmp/checkouts
+	-d /defects4j_with_dynamtests/corpus/data_by_project_and_version \
+	-o /defects4j_with_dynamtests/corpus/csv \
+	-t /tmp/checkouts
 ```
 

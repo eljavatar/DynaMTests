@@ -217,10 +217,10 @@ To perform the process of data extraction and analysis of the repositories, the 
 
 ```shell
 python find_map_tests_cases_from_repo.py \
-	--repos_file "repos_prueba.json" \
-	--tmp "/tmp/tmp_repos/" \
-	--output "/mining_results/train/output" \
-	--output_empty "/mining_results/train/output_empty"
+    --repos_file "repos_prueba.json" \
+    --tmp "/tmp/tmp_repos/" \
+    --output "/mining_results/train/output" \
+    --output_empty "/mining_results/train/output_empty"
 ```
 
 The execution of this script results in 2 folders:
@@ -247,8 +247,8 @@ The dataset creation is performed from the mined repositories and consists of re
 
 ```shell
 python clean_duplicates_and_build_dataset.py \
-	--mining_input "/mining_results" \
-	--output_dataset "/dataset"
+    --mining_input "/mining_results" \
+    --output_dataset "/dataset"
 ```
 
 If the three subfolders *train*, *validation* and *test* exist in the /mining_results folder, the script will start by removing the duplicate `test_case-focal_method` pairs from the test subset, then remove the duplicates from the validation subset (also remove them if they were already added to the train subset) and finally remove the duplicates from the test subset (also remove them if they were already added to the train or validation subset). In this way, 3 subfolders would be generated inside the */dataset* folder, one for each data subset.
@@ -266,46 +266,54 @@ This process would result in the creation of the corpus files in *json* and *raw
 
 ```shell
 python build_corpus.py \
-	--type_dataset "test" \
-	--input_dataset "/dataset/test" \
-	--input_encoding "utf-8" \
-	--output_corpus "/corpus/"
+    --type_dataset "test" \
+    --input_dataset "/dataset/test" \
+    --input_encoding "utf-8" \
+    --validate_against_d4j_dataset True \
+    --d4j_dataset "/defects4j_with_dynamtests/corpus/data_by_project_and_version" \
+    --output_corpus "/corpus/"
 
 python build_corpus.py \
-	--type_dataset "validation" \
-	--input_dataset "/dataset/validation" \
-	--input_encoding "utf-8" \
-	--output_corpus "/corpus/"
+    --type_dataset "validation" \
+    --input_dataset "/dataset/validation" \
+    --input_encoding "utf-8" \
+    --validate_against_d4j_dataset True \
+    --d4j_dataset "/defects4j_with_dynamtests/corpus/data_by_project_and_version" \
+    --output_corpus "/corpus/"
 
 python build_corpus.py \
-	--type_dataset "train" \
-	--input_dataset "/dataset/train" \
-	--input_encoding "utf-8" \
-	--output_corpus "/corpus/"
+    --type_dataset "train" \
+    --input_dataset "/dataset/train" \
+    --input_encoding "utf-8" \
+    --validate_against_d4j_dataset True \
+    --d4j_dataset "/defects4j_with_dynamtests/corpus/data_by_project_and_version" \
+    --output_corpus "/corpus/"
 ```
 
 In case the mining process was carried out on a Windows system, the `input_encoding` parameter should probably be `cp1252`.
+
+In addition, the `build_corpus.py` script also receives the `validate_against_d4j_dataset` parameter, through which it is indicated that in the corpus construction should be excluded those `test_method-focal_method` pairs that are in the Defects4J corpus, which is indicated through the `d4j_dataset` parameter. [This link](DEFECTS4J_README.md) details the process of building the Defects4J corpus.
 
 The second step consists in creating the corpus files in *csv* format, which is done from the corpus in json format:
 
 ```shell
 python convert_json_corpus_to_csv_input.py \
-	--type_corpus "test" \
-	--input_json_corpus "/corpus/json" \
-	--input_encoding "utf-8" \
-	--output_csv_corpus "/corpus/csv"
+    --type_corpus "test" \
+    --input_json_corpus "/corpus/json" \
+    --input_encoding "utf-8" \
+    --output_csv_corpus "/corpus/csv"
 
 python convert_json_corpus_to_csv_input.py \
-	--type_corpus "validation" \
-	--input_json_corpus "/corpus/json" \
-	--input_encoding "utf-8" \
-	--output_csv_corpus "/corpus/csv"
+    --type_corpus "validation" \
+    --input_json_corpus "/corpus/json" \
+    --input_encoding "utf-8" \
+    --output_csv_corpus "/corpus/csv"
 
 python convert_json_corpus_to_csv_input.py \
-	--type_corpus "train" \
-	--input_json_corpus "/corpus/json" \
-	--input_encoding "utf-8" \
-	--output_csv_corpus "/corpus/csv"
+    --type_corpus "train" \
+    --input_json_corpus "/corpus/json" \
+    --input_encoding "utf-8" \
+    --output_csv_corpus "/corpus/csv"
 ```
 
 
