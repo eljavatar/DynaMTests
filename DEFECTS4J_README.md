@@ -63,25 +63,12 @@ pip install tree-sitter-java==0.21.0
 In addition, we recommend creating the following folder structure where the scripts found in this repository should be placed since they are the ones we use in the following steps (As mentioned above, these folders and scripts are already included in our docker image):
 
 ```shell
-# Create the folder /DynaMTests
-cd /
-mkdir /DynaMTests
-The scripts that must be in this folder are the following:
-- analize_tokens_corpus.py
-- build_corpus_d4j.py
-- ClassParser.py
-- compress_folder.py
-- dependency_parser_utils.py
-- DependencyClassParser.py
-- extract_classes_info_d4j.py
-- ParserUtils.py
-
-
 # Create the folder /defects4j/framework/custom
 cd /defects4j/framework
 mkdir custom
-# In this folder should be copied the files found in the 'd4_utils' folder of this repository
 ```
+
+In this folder `custom` should be copied the files found in the [d4_utils](d4_utils) folder of this repository.
 
 
 ### Download bugfix versions
@@ -123,7 +110,7 @@ The next step is to analyze each of the versions to obtain the focal methods of 
 ```shell
 cd /
 mkdir defects4j_with_dynamtests
-# Locate in the folder /DynaMTests
+# Locate in the folder /DynaMTests (folder where this repository is cloned)
 cd /DynaMTests
 # Execute the following Script:
 python3 extract_classes_info_d4j.py \
@@ -143,7 +130,7 @@ The execution of this script will be saved in the `/defects4j_with_dynamtests/mi
 From the previously extracted data, the corpus is generated. First, the data are generated in json and raw formats. In addition, a folder named `data_by_project_and_version` will also be created inside the corpus folder, which will be used later to generate the corpus in csv format. For this, the following instructions are followed:
 
 ```shell
-# Locate in the folder /DynaMTests
+# Locate in the folder /DynaMTests (folder where this repository is cloned)
 cd /DynaMTests
 # Execute the following Script:
 python3 build_corpus_d4j.py \
