@@ -9,3 +9,15 @@ version: v1.0.0
 doi: 10.5281/zenodo.15055078
 date-released: 2025-03-20
 url: "https://doi.org/10.5281/zenodo.15055078"
+preferred-citation:
+  type: data
+  authors:
+  - family-names: Barragán Sarmiento
+    given-names: Andrés Mauricio
+    orcid: https://orcid.org/0009-0005-6931-9081
+  title: "DynaMTests: Dynamic context Mapped Tests"
+  version: v1.0.0
+  doi: 10.5281/zenodo.15055078
+  date-released: 2025-03-20
+  year: 2025
+  url: "https://doi.org/10.5281/zenodo.15055078"
