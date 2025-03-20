@@ -320,7 +320,7 @@ python convert_json_corpus_to_csv_input.py \
 ## Citation
 
 ```
-@software{barragan2025dynamtests,
+@dataset{barragan2025dynamtests,
     author = {Barragán Sarmiento, Andrés Mauricio},
     doi = {10.5281/zenodo.15055078},
     month = mar,
