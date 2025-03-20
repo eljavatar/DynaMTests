@@ -68,7 +68,7 @@ cd /defects4j/framework
 mkdir custom
 ```
 
-In this folder `custom` should be copied the files found in the [d4_utils](d4_utils) folder of this repository.
+In this folder `custom` should be copied the files found in the [d4j_utils](d4j_utils) folder of this repository.
 
 
 ### Download bugfix versions
