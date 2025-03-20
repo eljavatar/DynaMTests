@@ -63,7 +63,7 @@ pip install tree-sitter-java==0.21.0
 In addition, we recommend creating the following folder structure where the scripts found in this repository should be placed since they are the ones we use in the following steps (As mentioned above, these folders and scripts are already included in our docker image):
 
 ```shell
-# Create the folder /defects4j/framework/custom
+# Create the folder /defects4j/framework/custom (in the path where the Defects4J repository was cloned)
 cd /defects4j/framework
 mkdir custom
 ```
