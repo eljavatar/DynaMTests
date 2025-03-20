@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/873993609.svg)](https://doi.org/10.5281/zenodo.15055077)
 # DynaMTests: **Dyna**mic context **M**apped **Tests**
 
 ## Description
@@ -316,6 +317,19 @@ python convert_json_corpus_to_csv_input.py \
     --output_csv_corpus "/corpus/csv"
 ```
 
+## Citation
+
+```
+@software{barragan2025dynamtests,
+    author = {Barragán Sarmiento, Andrés Mauricio},
+    doi = {10.5281/zenodo.15055078},
+    month = mar,
+    title = {{DynaMTests: Dynamic context Mapped Tests}},
+    url = {https://doi.org/10.5281/zenodo.15055078},
+    version = {v1.0.0},
+    year = {2025}
+}
+```
 
 
 
