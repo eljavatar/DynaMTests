@@ -22,8 +22,11 @@ class ClassParser():
         else:
             JAVA_LANGUAGE = Language(tsjava.language())
 
-        self.parser = Parser()
-        self.parser.set_language(JAVA_LANGUAGE)
+        if version.parse(str(tree_sitter_version)) < version.parse("0.22.1"):
+            self.parser = Parser()
+            self.parser.set_language(JAVA_LANGUAGE)
+        else:
+            self.parser = Parser(JAVA_LANGUAGE)
     
 
     def parse_file(self, file):
