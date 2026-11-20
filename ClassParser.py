@@ -750,8 +750,8 @@ class ClassParser():
                 d_class_list.append(class_name.split("[")[0])
 
             param_list.append(class_name)
-            class_instance = ClassParser.match_from_span(child.named_children[instance_index], blob)
-            instance2Class[class_instance] = class_name
+            class_instance_name = ClassParser.match_from_span(child.named_children[instance_index], blob)
+            instance2Class[class_instance_name] = class_name
 
         return param_list, d_class_list, instance2Class
     

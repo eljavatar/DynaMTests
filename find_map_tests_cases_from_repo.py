@@ -219,10 +219,10 @@ def find_map_test_cases(root, language, output, repo, error_cloning):
     try:
         result = subprocess.check_output(r'grep -l -r @Test --include \*.java', shell=True)
         #result = subprocess.check_output(r'grep -l -r @Test --include \*\\.java', shell=True)
-        tests = result.decode('ascii').splitlines()
+        test_files = result.decode('ascii').splitlines()
     except subprocess.CalledProcessError as e:
         if e.returncode == 1:
-            print("\nNo se encontraron archivos java que contengan la anotacion @Test")
+            print("\nNo se encontraron archivos .java que contengan la anotacion @Test")
             repo_has_test_files = False
             log.write("No se encontraron archivos .java que contengan la anotacion @Test" + '\n')
             log.close()
@@ -244,19 +244,19 @@ def find_map_test_cases(root, language, output, repo, error_cloning):
         log.close()
         return 0, 0, 0, 0, repo_exists, repo_has_test_files, error_finding_java_files
     
-    #print("\n\nList tests")
-    #print(tests)
+    #print("\n\nList test_files")
+    #print(test_files)
     #print("")
 
     #Java Files
     try:
         #result = subprocess.check_output(['find', '-name', '*.java'], shell=True)
-        #all_java = result.decode('ascii').splitlines()
+        #all_java_files = result.decode('ascii').splitlines()
 
-        all_java = glob.glob('**/*.java', recursive=True)
-        all_java = [path.replace("\\", "/") for path in all_java] # For Windows
+        all_java_files = glob.glob('**/*.java', recursive=True)
+        all_java_files = [path.replace("\\", "/") for path in all_java_files] # For Windows
 
-        all_java = [j.replace("./", "") for j in all_java]
+        all_java_files = [j.replace("./", "") for j in all_java_files]
     except Exception as ex:
         print("Error during find java files: " + str(ex) + '\n')
         error_trace = ''.join(traceback.TracebackException.from_exception(ex).format())
@@ -271,13 +271,13 @@ def find_map_test_cases(root, language, output, repo, error_cloning):
     #print("")
 
     #Potential Focal Classes
-    focals = list(set(all_java) - set(tests))
-    focals = [f for f in focals if not "src/test" in f]
-    focals_norm = [f.lower() for f in focals]
+    focal_files = list(set(all_java_files) - set(test_files))
+    focal_files = [f for f in focal_files if not "src/test" in f]
+    focal_files_norm = [f.lower() for f in focal_files]
 
-    log.write("Java Files: " + str(len(all_java)) + '\n')
-    log.write("Test Classes: " + str(len(tests)) + '\n')
-    log.write("Potential Focal Classes: " + str(len(focals)) + '\n')
+    log.write("Java Files: " + str(len(all_java_files)) + '\n')
+    log.write("Test Classes: " + str(len(test_files)) + '\n')
+    log.write("Potential Focal Classes: " + str(len(focal_files)) + '\n')
     log.flush()
 
     #Matched tests
@@ -285,11 +285,10 @@ def find_map_test_cases(root, language, output, repo, error_cloning):
 
     #Map Test Class -> Focal Class
     log.write("Perfect name matching analysis Test Class -> Focal Class" '\n')
-    for test in tests:
-        tests_norm = test.lower().replace("/src/test/", "/src/main/")
-        #tests_norm = tests_norm.replace("test", "")
+    for test_class in test_files:
+        test_file_norm = test_class.lower().replace("/src/test/", "/src/main/")
 
-        dirs_path = tests_norm.split("/")
+        dirs_path = test_file_norm.split("/")
         class_name = dirs_path[-1].replace(".java", "")
 
         length_test_class_name = len(class_name)
@@ -298,12 +297,12 @@ def find_map_test_cases(root, language, output, repo, error_cloning):
         elif class_name.startswith("test"):
             class_name = class_name[4:]
 
-        tests_norm = "/".join(dirs_path[:-1]) + "/" + class_name + ".java"
+        test_file_norm = "/".join(dirs_path[:-1]) + "/" + class_name + ".java"
 
-        if tests_norm in focals_norm:
-            index = focals_norm.index(tests_norm)
-            focal = focals[index]
-            mapped_tests[test] = focal
+        if test_file_norm in focal_files_norm:
+            index = focal_files_norm.index(test_file_norm)
+            focal_class = focal_files[index]
+            mapped_tests[test_class] = focal_class
     
     log.write("Perfect Matches Found: " + str(len(mapped_tests.keys())) + '\n')
     #print("\n\nMap Test Class -> Focal Class")
@@ -311,7 +310,7 @@ def find_map_test_cases(root, language, output, repo, error_cloning):
     #print("")
 
     #Stats
-    tot_tclass = len(tests)
+    tot_tclass = len(test_files)
     tot_tclass_fclass = len(mapped_tests)
     tot_tc = 0
     tot_mtc = 0
@@ -336,15 +335,15 @@ def find_map_test_cases(root, language, output, repo, error_cloning):
     log_error_mapping.write("==================================================" + '\n')
     has_error_mapping = False
 
-    for test, focal in tqdm(mapped_tests.items(), leave=True, desc="Mapping Test-Cases (" + str(repo['repo_id']) + ")"):
+    for test_class, focal_class in tqdm(mapped_tests.items(), leave=True, desc="Mapping Test-Cases (" + str(repo['repo_id']) + ")"):
         log.write("----------" + '\n')
-        log.write("Test: " + test + '\n')
-        log.write("Focal: " + focal + '\n')
+        log.write("Test Class: " + test_class + '\n')
+        log.write("Focal Class: " + focal_class + '\n')
 
         #if index == 0:
         try:
-            test_cases = parse_test_cases(parser, test)
-            focal_methods = parse_potential_focal_methods(parser, dependency_parser, parserutils, focal, focals)
+            test_cases = parse_test_cases(parser, test_class)
+            focal_methods = parse_potential_focal_methods(parser, dependency_parser, parserutils, focal_class, focal_files)
             tot_tc += len(test_cases)
             #print("\n\n")
             #print(focal_methods)
@@ -354,7 +353,7 @@ def find_map_test_cases(root, language, output, repo, error_cloning):
             #print(test_cases)
             #print("\n\n")
 
-            mtc = match_test_cases(parserutils, test, focal, test_cases, focal_methods, log)
+            mtc = match_test_cases(parserutils, test_class, focal_class, test_cases, focal_methods, log)
             #print("\n\n")
             #print(mtc)
             #print("\n\n")
@@ -367,12 +366,12 @@ def find_map_test_cases(root, language, output, repo, error_cloning):
             #tb = traceback.format_exc()
             #tb = ''.join(traceback.format_exception(type(ex), ex, ex.__traceback__))
             has_error_mapping = True
-            print(f"Error parsing class {focal} for repo_id {str(repo['repo_id'])}: {str(type(ex).__name__)}: {str(ex)} \n")
+            print(f"Error parsing class {focal_class} for repo_id {str(repo['repo_id'])}: {str(type(ex).__name__)}: {str(ex)} \n")
             error_trace = ''.join(traceback.TracebackException.from_exception(ex).format())
             log.write("Error parsing classes: " + str(type(ex).__name__) + ": " + str(ex) + '\n')
             log_error_mapping.write("------------------------------" + '\n')
-            log_error_mapping.write("Test: " + test + '\n')
-            log_error_mapping.write("Focal: " + focal + '\n')
+            log_error_mapping.write("Test Class: " + test_class + '\n')
+            log_error_mapping.write("Focal Class: " + focal_class + '\n')
             log_error_mapping.write("Error parsing classes: " + str(type(ex).__name__) + ": " + str(ex) + '\n')
             log_error_mapping.write(error_trace + '\n\n\n')
             # if (isinstance(ex, RecursionError)# Es causado cuando el traverse_type tiene demasiada profundidad
@@ -596,24 +595,24 @@ def match_test_cases(parserutils: DependencyParserUtils, test_class, focal_class
 
     tested_focal_methods = set()
 
-    focals_norm = [f['method_name'].lower() for f in focal_methods]
+    focal_methods_names_norm = [f['method_name'].lower() for f in focal_methods]
     for test_case in test_cases:
-        #test_case_norm = test_case['method_name'].lower().replace("test", "")
-        test_case_norm = test_case['method_name'].lower()
+        #test_case_name_norm = test_case['method_name'].lower().replace("test", "")
+        test_case_name_norm = test_case['method_name'].lower()
 
-        length_test_case_name = len(test_case_norm)
-        if test_case_norm.endswith("test"):
-            test_case_norm = test_case_norm[:length_test_case_name - 4]
-        elif test_case_norm.startswith("test"):
-            test_case_norm = test_case_norm[4:]
+        length_test_case_name = len(test_case_name_norm)
+        if test_case_name_norm.endswith("test"):
+            test_case_name_norm = test_case_name_norm[:length_test_case_name - 4]
+        elif test_case_name_norm.startswith("test"):
+            test_case_name_norm = test_case_name_norm[4:]
 
         log.write("Test-Case: " + test_case['method_name'] + '\n')
 
         #Matching Strategies
-        if test_case_norm in focals_norm:
+        if test_case_name_norm in focal_methods_names_norm:
             #Name Matching
-            index = focals_norm.index(test_case_norm)
-            focal = focal_methods[index]
+            index = focal_methods_names_norm.index(test_case_name_norm)
+            focal_method = focal_methods[index]
 
             test_case.pop('method_dependencies_by_class')
             test_case.pop('method_references_dependencies_by_class')
@@ -622,11 +621,11 @@ def match_test_cases(parserutils: DependencyParserUtils, test_class, focal_class
             mapped_test_case['test_class'] = test_class
             mapped_test_case['test_case'] = test_case
             mapped_test_case['focal_class'] = focal_class
-            mapped_test_case['focal_method'] = focal
+            mapped_test_case['focal_method'] = focal_method
 
             mapped_test_cases.append(mapped_test_case)
-            tested_focal_methods.add(focal['parameters'])
-            log.write("> Found Focal-Method: " + focal['parameters'] + '\n')
+            tested_focal_methods.add(focal_method['parameters'])
+            log.write("> Found Focal-Method: " + focal_method['parameters'] + '\n')
         
         else:
             #Single method invoked that is in the focal class
@@ -671,7 +670,7 @@ def match_test_cases(parserutils: DependencyParserUtils, test_class, focal_class
                     
     log.write("+++++++++" + '\n')
     log.write("Test-Cases: " + str(len(test_cases)) + '\n')
-    log.write("Focal Methods: " + str(len(focals_norm)) + '\n')
+    log.write("Focal Methods: " + str(len(focal_methods_names_norm)) + '\n')
     log.write("Tested Focal Methods: " + str(len(tested_focal_methods)) + '\n')
     log.write("Mapped Test Cases: " + str(len(mapped_test_cases)) + '\n')
     return mapped_test_cases

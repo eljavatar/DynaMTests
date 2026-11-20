@@ -1,2 +1,13 @@
 mining_results
 mining_results/*
+
+.clinerules/
+.roo/
+
+.clineignore
+.rooignore
+
+# Artefactos de Python y pytest
+__pycache__/
+*.pyc
+.pytest_cache/
