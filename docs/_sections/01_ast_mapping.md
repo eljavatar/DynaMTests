@@ -227,7 +227,7 @@ Script que descarga los repositorios (clonado superficial con `GitPython`) y ext
 
 ### 1.13 Arnés de depuración `test_extract_dependencies()`
 
-1.13.1 El método [`test_extract_dependencies()`](find_map_tests_cases_from_repo.py:407) contiene una ruta local fija a `000_java_classes_prueba`, una lista manual de archivos Java y la invocación de `parse_potential_focal_methods` sobre `FocalContext.java` ([`find_map_tests_cases_from_repo.py:417-449`](find_map_tests_cases_from_repo.py:417)).
+1.13.1 El método [`test_extract_dependencies()`](find_map_tests_cases_from_repo.py:407) contiene una ruta local fija a `tests/fixtures/java/sample_java_repo`, una lista manual de archivos Java y la invocación de `parse_potential_focal_methods` sobre `FocalContext.java` ([`find_map_tests_cases_from_repo.py:417-449`](find_map_tests_cases_from_repo.py:417)).
 
 1.13.2 Su única invocación está comentada, por lo que no participa del flujo productivo ([`find_map_tests_cases_from_repo.py:328`](find_map_tests_cases_from_repo.py:328)).
 

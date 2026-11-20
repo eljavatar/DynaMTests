@@ -2,7 +2,7 @@
 
 **Estado:** PLAN (no implementado). Este documento es el contrato para la futura implementación.
 **Alcance:** diseñar la estructura, la matriz de pruebas, las fixtures, la estrategia de ejecución y el criterio de aceptación de una batería `pytest` que cubra las etapas 1–7 del pipeline documentado en [`PIPELINE_STEPS.md`](PIPELINE_STEPS.md:1).
-**Prohibiciones respetadas al redactar este plan:** no se creó ningún archivo `.py`, no se modificó ningún fuente, no se ejecutó el pipeline, no se clonó ningún repositorio, no se accedió a `corpus/`, `dataset/`, `repos/`, `defects4j_corpus/`, `mining_results/`, ni a archivos `*.csv` / `*.json` distintos de [`repos_prueba.json`](repos_prueba.json:1).
+**Prohibiciones respetadas al redactar este plan:** no se creó ningún archivo `.py`, no se modificó ningún fuente, no se ejecutó el pipeline, no se clonó ningún repositorio, no se accedió a `corpus/`, `dataset/`, `repos/`, `defects4j_corpus/`, `mining_results/`, ni a archivos `*.csv` / `*.json` distintos de [`repos_prueba.json`](tests/fixtures/repos_prueba.json:1).
 
 Convención de etiquetas (heredada de la documentación): las etiquetas conceptuales `FM_FC_MS_FF` y `FM_FC_DCTX` **no existen como literales** en el código; corresponden a las variables `src_fm_fc_ms_ff`, `src_fm_fc_dctx` y la variante extra `src_fm_fc_dctx_priv`, emitidas por [`build_format_corpus()`](build_corpus.py:416).
 
@@ -105,7 +105,7 @@ Columnas: `ID` | `Nivel` | `Archivo objetivo` | `Función bajo prueba` | `Fixtur
 
 | ID | Nivel | Objetivo | Función (`file:line`) | Fixture | Entrada | Aserción exacta | Tipo |
 |---|---|---|---|---|---|---|---|
-| U-DEP-01 | unit | `dependency_parser_utils.py` | [`parse_potential_focal_and_external_dependencies()`](dependency_parser_utils.py:113) | `java_tmp_tree` | `parsed_classes` de `FocalContext.java` + `all_focal_java_files` = los 10 `.java` de `000_java_classes_prueba/src/main` | `set(d['class_name'] for d in meth['external_dependencies']) == {'ExternalContext01','SamePackageExternal01','ExternalContext02','ExternalContext03','ExternalContext04','StaticExternal01'}` — justificación: `ExternalContext01` (campo + import + `ExternalContext01::methodReference`), `SamePackageExternal01` (campo `fromSamePackExt01`, resuelto por paquete [`dependency_parser_utils.py:243`](dependency_parser_utils.py:243)), `ExternalContext02/03` (import + paquete, fusionados por firma [`dependency_parser_utils.py:380-407`](dependency_parser_utils.py:380)), `ExternalContext04` (static import + clase en el mismo archivo [`dependency_parser_utils.py:257`](dependency_parser_utils.py:257)), `StaticExternal01` (import + static import de `STATIC_INT_VAL`) | normal |
+| U-DEP-01 | unit | `dependency_parser_utils.py` | [`parse_potential_focal_and_external_dependencies()`](dependency_parser_utils.py:113) | `java_tmp_tree` | `parsed_classes` de `FocalContext.java` + `all_focal_java_files` = los 10 `.java` de `tests/fixtures/java/sample_java_repo/src/main` | `set(d['class_name'] for d in meth['external_dependencies']) == {'ExternalContext01','SamePackageExternal01','ExternalContext02','ExternalContext03','ExternalContext04','StaticExternal01'}` — justificación: `ExternalContext01` (campo + import + `ExternalContext01::methodReference`), `SamePackageExternal01` (campo `fromSamePackExt01`, resuelto por paquete [`dependency_parser_utils.py:243`](dependency_parser_utils.py:243)), `ExternalContext02/03` (import + paquete, fusionados por firma [`dependency_parser_utils.py:380-407`](dependency_parser_utils.py:380)), `ExternalContext04` (static import + clase en el mismo archivo [`dependency_parser_utils.py:257`](dependency_parser_utils.py:257)), `StaticExternal01` (import + static import de `STATIC_INT_VAL`) | normal |
 | U-DEP-02 | unit | `dependency_parser_utils.py` | idem | `java_tmp_tree` | idem | `all('.' not in d['class_name'] for d in deps)` — `Map.Entry` se descarta por contener punto ([`dependency_parser_utils.py:222-223`](dependency_parser_utils.py:222)) | normal |
 | U-DEP-03 | unit | `dependency_parser_utils.py` | idem | `java_tmp_tree` | idem | `{d['class_name']: d['has_constructor'] for d in deps} == {'ExternalContext01': True, 'SamePackageExternal01': False, 'ExternalContext02': False, 'ExternalContext03': False, 'ExternalContext04': False, 'StaticExternal01': True}` | normal |
 | U-DEP-04 | unit | `dependency_parser_utils.py` | idem + [`extract_info_from_dependency()`](dependency_parser_utils.py:322) | `java_tmp_tree` | idem | dep `SamePackageExternal01`: `d['class_signature'] == 'public class SamePackageExternal01'`; `d['fields'] == []`; `[m['full_signature_parameters'] for m in d['methods']] == ['public String getSomeStrFromSamePackExt01()']` | normal |
@@ -114,7 +114,7 @@ Columnas: `ID` | `Nivel` | `Archivo objetivo` | `Función bajo prueba` | `Fixtur
 
 ### B.4 Las tres heurísticas de `match_test_cases()` + casos de fallo
 
-Fixture requerida (ver sección C.3): [`000_java_classes_prueba/src/test/com/eljavatar/focals/FocalContextTest.java`](000_java_classes_prueba/src/test).
+Fixture requerida (ver sección C.3): [`tests/fixtures/java/sample_java_repo/src/test/com/eljavatar/focals/FocalContextTest.java`](tests/fixtures/java/sample_java_repo/src/test).
 
 | ID | Nivel | Objetivo | Función (`file:line`) | Fixture | Entrada (método del test fixture) | Aserción exacta | Tipo |
 |---|---|---|---|---|---|---|---|
@@ -123,7 +123,7 @@ Fixture requerida (ver sección C.3): [`000_java_classes_prueba/src/test/com/elj
 | U-MAP-03 | unit | idem | estrategia 2, invocación única ([`632-666`](find_map_tests_cases_from_repo.py:632)) | idem | `verifyBehaviour() { new FocalContext().runSomeVoid("x"); }` | `len(mapped) == 1`; `mapped[0]['focal_method']['parameters'] == 'String val'`; log contiene `'> [Single-Invocation] Found Focal-Method:'` ([`666`](find_map_tests_cases_from_repo.py:666)) | normal |
 | U-MAP-04 | unit | idem | ambigüedad ([`644-646`](find_map_tests_cases_from_repo.py:644)) | idem | `verifyAmbiguous()` con 2 invocaciones a la clase focal (`runSomeVoid("x")` y `callSomeMethod(1)`) | `mapped == []` | borde |
 | U-MAP-05 | unit | idem | 0 invocaciones | idem | `verifyNoInvocation() { Assert.assertEquals(1, 1); }` | `mapped == []` (`extract_methods_from_focal_class` vacío, [`652`](find_map_tests_cases_from_repo.py:652)) | borde |
-| U-MAP-06 | unit | idem | `list.index()` insensible a sobrecargas ([`614`](find_map_tests_cases_from_repo.py:614)) | idem | `runSomeVoidTest() { new FocalContext().runSomeVoid(1L); }` | **bloqueo del bug**: `mapped[0]['focal_method']['parameters'] == 'String val'` (primera `runSomeVoid` en orden de declaración, [`FocalContext.java:83`](000_java_classes_prueba/src/main/com/eljavatar/focals/FocalContext.java:83)) aunque la invocación real recibe `Long`; `len(mapped) == 1` | regresión |
+| U-MAP-06 | unit | idem | `list.index()` insensible a sobrecargas ([`614`](find_map_tests_cases_from_repo.py:614)) | idem | `runSomeVoidTest() { new FocalContext().runSomeVoid(1L); }` | **bloqueo del bug**: `mapped[0]['focal_method']['parameters'] == 'String val'` (primera `runSomeVoid` en orden de declaración, [`FocalContext.java:83`](tests/fixtures/java/sample_java_repo/src/main/com/eljavatar/focals/FocalContext.java:83)) aunque la invocación real recibe `Long`; `len(mapped) == 1` | regresión |
 | U-MAP-07 | unit | idem | resolución por aridad/tipo (deseada) | idem | idem U-MAP-06 | `mapped[0]['focal_method']['parameters'] == 'Long val'` | xfail (`xfail_spoon`, `strict=True`) |
 | U-MAP-08 | unit | idem | filtro por nombre de clase ([`634-642`](find_map_tests_cases_from_repo.py:634)) | idem | `verifyOtherClass() { new SamePackageExternal01().getSomeStrFromSamePackExt01(); }` | `mapped == []` (la dependencia no coincide con `focal_class_name`) | borde |
 | U-MAP-09 | unit | idem | contrato de mutación del caso de prueba ([`617-618`](find_map_tests_cases_from_repo.py:617), [`655-656`](find_map_tests_cases_from_repo.py:655)) | idem | `testDoSomething()` | ambas claves de dependencias eliminadas del dict **in situ**; `mapped[0]['test_case']` es el mismo objeto que el de entrada (`is`) | normal |
@@ -253,7 +253,7 @@ Estos tres literales se derivan de las plantillas y del orden exacto de argument
 | `repo_root` | `session` | `pathlib.Path` del rootdir del proyecto | `module_loader`, `java_tmp_tree` |
 | `fm_repo_module` | `module` | el módulo [`find_map_tests_cases_from_repo.py`](find_map_tests_cases_from_repo.py:1) cargado con alias `dynamtests_find_map`, haciendo `importlib.reload` si ya estaba en `sys.modules` con estado fallido | U-CLI-04, I-01..I-06, U-MAP-* |
 | `parser_utils` | `session` | instancia `ParserUtils('utf-8')` | U-PU-*, U-FMT-*, U-PAR-*, E-01 |
-| `java_tmp_tree` | `function` | `tmp_path` con la copia del layout `000_java_classes_prueba/src/{main,test}` (copia con `shutil.copytree`, incluida la clase de test del GAP) y un `BrokenClass.java` malformado en `src/main/broken/` | U-AST-*, U-DEP-*, I-01, I-03..I-06 |
+| `java_tmp_tree` | `function` | `tmp_path` con la copia del layout `sample_java_repo/src/{main,test}` (copia con `shutil.copytree`, incluida la clase de test del GAP) y un `BrokenClass.java` malformado en `src/main/broken/` | U-AST-*, U-DEP-*, I-01, I-03..I-06 |
 | `mining_tmp_tree` | `function` | `tmp_path` con `mining/{train,validation,test}/output/<repo_id>/` y JSON sintéticos (helper `make_mtc_json(body_focal, body_test, url)`) | U-DUP-*, E-01 |
 | `json_corpus_2_repos` | `function` | `tmp_path` con `corpus/json/validation/repoA/`, `.../repoB/` y 2 JSON de 6 claves | U-CSV-* |
 | `metadata_focal_context` | `function` | dict de C.2 | U-FMT-01..03, U-PAR-01 |
@@ -261,7 +261,7 @@ Estos tres literales se derivan de las plantillas y del orden exacto de argument
 | `metadata_myclass` | `function` | dict con la firma de `MyClass.java` (con `@AllConstructors` y `<T>`) | U-FMT-08, U-PAR-02 |
 | `match_inputs_real` | `function` | tupla `(test_class_dict, focal_class_dict, test_cases, focal_methods)` construida con `ClassParser` real sobre `java_tmp_tree` | U-MAP-01..10, I-05 |
 | `no_network` (autouse) | `session` | `None`; parchea `git.Repo.clone_from`, `git.Repo.__init__`, `socket.socket.connect`, `urllib.request.urlopen`, `requests.*` si están importados | Todos (E-02 lo verifica) |
-| `repo_prueba_payload` | `session` | `json.loads` del contenido de [`repos_prueba.json`](repos_prueba.json:1) (15 entradas, claves `repo_id` + `url`) | U-CLI-04, I-01 (construcción del `repo` dict) |
+| `repo_prueba_payload` | `session` | `json.loads` del contenido de [`repos_prueba.json`](tests/fixtures/repos_prueba.json:1) (15 entradas, claves `repo_id` + `url`) | U-CLI-04, I-01 (construcción del `repo` dict) |
 | `tmp_log` | `function` | `io.StringIO()` que simula el `log` de [`match_test_cases()`](find_map_tests_cases_from_repo.py:581) | U-MAP-10 |
 
 ### C.2 `metadata_focal_context` (dict canónico)
@@ -297,11 +297,11 @@ Estos tres literales se derivan de las plantillas y del orden exacto de argument
 }
 ```
 
-### C.3 GAP de fixtures: `000_java_classes_prueba/src/test/` está vacío
+### C.3 GAP de fixtures: `tests/fixtures/java/sample_java_repo/src/test/` está vacío
 
-**Hallazgo:** la carpeta [`000_java_classes_prueba/src/test/`](000_java_classes_prueba/src/test) existe y está **vacía**. Sin ella no se puede ejercitar [`parse_test_cases()`](find_map_tests_cases_from_repo.py:512) ni las tres heurísticas de [`match_test_cases()`](find_map_tests_cases_from_repo.py:581) de extremo a extremo. Es una precondición bloqueante de los bloques U-MAP, I-04 y I-05.
+**Hallazgo:** la carpeta [`tests/fixtures/java/sample_java_repo/src/test/`](tests/fixtures/java/sample_java_repo/src/test) existe y está **vacía**. Sin ella no se puede ejercitar [`parse_test_cases()`](find_map_tests_cases_from_repo.py:512) ni las tres heurísticas de [`match_test_cases()`](find_map_tests_cases_from_repo.py:581) de extremo a extremo. Es una precondición bloqueante de los bloques U-MAP, I-04 y I-05.
 
-**Archivo que debe crearse:** `000_java_classes_prueba/src/test/com/eljavatar/focals/FocalContextTest.java`
+**Archivo que debe crearse:** `tests/fixtures/java/sample_java_repo/src/test/com/eljavatar/focals/FocalContextTest.java`
 
 Contenido mínimo requerido (7 métodos `@Test`, todos en la misma clase, mismo paquete que `FocalContext`, sin `@Ignore`):
 

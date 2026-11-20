@@ -7,7 +7,7 @@ each stage consuming the *real* artefacts of the previous one:
 
 1. **Stage 1 - mining / mapping**
    [`find_map_test_cases()`](find_map_tests_cases_from_repo.py:192) over a
-   ``tmp_path`` copy of [`000_java_classes_prueba`](000_java_classes_prueba/src/main)
+   ``tmp_path`` copy of [`sample_java_repo`](tests/fixtures/java/sample_java_repo/src/main)
    in which two test classes are present (see "Fixture tailoring" below). It
    writes the mapped-test-case JSONs (``<repo_id>_<i>.json``) through
    [`export_mtc()`](find_map_tests_cases_from_repo.py:679) plus ``log.txt``.
@@ -43,7 +43,7 @@ Stage 1 artefacts asserted by E-01
 
 Fixture tailoring (and why)
 ---------------------------
-* The stock [`FocalContextTest.java`](000_java_classes_prueba/src/test/com/eljavatar/focals/FocalContextTest.java:1)
+* The stock [`FocalContextTest.java`](tests/fixtures/java/sample_java_repo/src/test/com/eljavatar/focals/FocalContextTest.java:1)
   is rewritten *inside the tmp copy only* to keep just ``testDoSomething()``
   (name-matching heuristic) and ``verifyBehaviour()`` (single-invocation
   heuristic). The remaining five fixture methods exist to lock the mapping
@@ -58,7 +58,7 @@ Fixture tailoring (and why)
   literal blacklist applied at
   [`clean_duplicates_and_build_dataset.py:99-101`](clean_duplicates_and_build_dataset.py:99),
   so any Defects4J URL (including the first entry of
-  [`repos_prueba.json`](repos_prueba.json:1)) would be dropped by design.
+  [`repos_prueba.json`](tests/fixtures/repos_prueba.json:1)) would be dropped by design.
 
 Hermeticity
 -----------

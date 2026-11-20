@@ -147,8 +147,8 @@ from raising `KeyError` at collection time.
 |---|---|---|
 | [`repo_root`](tests/conftest.py:108) | session | repository root `Path` |
 | [`tests_root`](tests/conftest.py:114) | session | `tests/` `Path` |
-| [`myclass_java_path`](tests/conftest.py:120) | session | [`MyClass.java`](MyClass.java:1) at the repo root |
-| [`java_classes_root`](tests/conftest.py:129) | session | [`000_java_classes_prueba`](000_java_classes_prueba/src/main) |
+| [`myclass_java_path`](tests/conftest.py:120) | session | [`MyClass.java`](tests/fixtures/java/MyClass.java:1) in `tests/fixtures/java` |
+| [`java_classes_root`](tests/conftest.py:129) | session | [`sample_java_repo`](tests/fixtures/java/sample_java_repo/src/main) |
 | [`java_main_root`](tests/conftest.py:138) | session | `…/src/main` |
 | [`java_test_root`](tests/conftest.py:144) | session | `…/src/test` |
 | [`focal_context_java`](tests/conftest.py:150) | session | `FocalContext.java` fixture file |
@@ -191,7 +191,7 @@ All of them return the module loaded from disk under a unique alias, so
 
 | Fixture | Scope | Returns |
 |---|---|---|
-| [`repo_prueba_payload`](tests/conftest.py:343) | session | parsed [`repos_prueba.json`](repos_prueba.json:1) (15 `repo_id`/`url` entries) |
+| [`repo_prueba_payload`](tests/conftest.py:343) | session | parsed [`repos_prueba.json`](tests/fixtures/repos_prueba.json:1) (15 `repo_id`/`url` entries) |
 | [`make_mtc_json`](tests/conftest.py:352) | function | [`make_mtc_json()`](tests/fixtures/mining_samples.py:114) builder of synthetic mining JSONs |
 | [`make_corpus_record`](tests/conftest.py:360) | function | [`make_corpus_record()`](tests/fixtures/mining_samples.py:161) builder of six-key corpus records |
 | [`metadata_focal_context`](tests/conftest.py:475) | function | canonical `{focal_class, focal_method}` dict (TEST_PLAN §C.2) |
@@ -206,7 +206,7 @@ All of them return the module loaded from disk under a unique alias, so
 
 | Fixture | Scope | Returns |
 |---|---|---|
-| [`java_tmp_tree`](tests/conftest.py:371) | function | `tmp_path/000_java_classes_prueba` with `src/main` + `src/test` copied |
+| [`java_tmp_tree`](tests/conftest.py:371) | function | `tmp_path/sample_java_repo` with `src/main` + `src/test` copied |
 | [`java_tmp_main`](tests/conftest.py:390) | function | its `src/main` |
 | [`java_tmp_test`](tests/conftest.py:396) | function | its `src/test` |
 | [`all_focal_java_files`](tests/conftest.py:402) | function | the ten `src/main` `.java` files as absolute POSIX paths |
@@ -288,15 +288,16 @@ artefacts:
 
 * **No `.rooignore` path** is read or written: `corpus/`, `dataset/`,
   `defects4j_corpus/`, `repos/`, `mining_results/`, `*.csv`, `*.zip`,
-  `*.tar.gz`. [`repos_prueba.json`](repos_prueba.json:1) is the only JSON data
+  `*.tar.gz`. [`repos_prueba.json`](tests/fixtures/repos_prueba.json:1) is the only JSON data
   file the tests read.
 * **No network.** [`no_network`](tests/conftest.py:68) is autouse for the whole
   session; no test reaches `find_map_test_cases()`'s clone path, and the `grep`
   subprocess is replaced by a deterministic fake (`find_map_tests_cases_from_repo.py:220`).
 * **No absolute machine paths**: everything is created under `tmp_path` /
   `tmp_path_factory`; the only inputs are the repo fixtures
-  ([`MyClass.java`](MyClass.java:1), [`000_java_classes_prueba`](000_java_classes_prueba/src/main),
-  [`repos_prueba.json`](repos_prueba.json:1), `tests/fixtures/`).
+  ([`MyClass.java`](tests/fixtures/java/MyClass.java:1),
+  [`sample_java_repo`](tests/fixtures/java/sample_java_repo/src/main),
+  [`repos_prueba.json`](tests/fixtures/repos_prueba.json:1), `tests/fixtures/`).
 * **No production modification.** If a test surfaces a defect, the test pins the
   observed behaviour (with the reason and the `file:line`) instead of changing
   the pipeline; the fix is tracked by the `xfail_spoon` block.

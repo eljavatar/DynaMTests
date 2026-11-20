@@ -34,7 +34,7 @@ import pytest
 pytestmark = pytest.mark.unit
 
 
-# ``java_tmp_tree`` copies ``000_java_classes_prueba/src/{main,test}`` into
+# ``java_tmp_tree`` copies ``sample_java_repo/src/{main,test}`` into
 # ``tmp_path``; paths below are composed from the existing ``java_tmp_main``
 # fixture (no fixture logic is duplicated here).
 FOCAL_CONTEXT_RELATIVE_PATH = Path("com") / "eljavatar" / "focals" / "FocalContext.java"

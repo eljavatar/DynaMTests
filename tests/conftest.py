@@ -119,8 +119,8 @@ def tests_root() -> Path:
 
 @pytest.fixture(scope="session")
 def myclass_java_path(repo_root: Path) -> Path:
-    """Path of the reference fixture ``MyClass.java`` at the project root."""
-    path = repo_root / "MyClass.java"
+    """Path of the reference fixture ``tests/fixtures/java/MyClass.java``."""
+    path = repo_root / "tests" / "fixtures" / "java" / "MyClass.java"
     if not path.is_file():
         pytest.skip(f"Missing fixture: {path}")
     return path
@@ -128,8 +128,8 @@ def myclass_java_path(repo_root: Path) -> Path:
 
 @pytest.fixture(scope="session")
 def java_classes_root(repo_root: Path) -> Path:
-    """Root of the ``000_java_classes_prueba`` fixture project."""
-    path = repo_root / "000_java_classes_prueba"
+    """Root of the ``tests/fixtures/java/sample_java_repo`` fixture project."""
+    path = repo_root / "tests" / "fixtures" / "java" / "sample_java_repo"
     if not path.is_dir():
         pytest.skip(f"Missing fixture project: {path}")
     return path
@@ -137,13 +137,13 @@ def java_classes_root(repo_root: Path) -> Path:
 
 @pytest.fixture(scope="session")
 def java_main_root(java_classes_root: Path) -> Path:
-    """``000_java_classes_prueba/src/main`` directory."""
+    """``tests/fixtures/java/sample_java_repo/src/main`` directory."""
     return java_classes_root / "src" / "main"
 
 
 @pytest.fixture(scope="session")
 def java_test_root(java_classes_root: Path) -> Path:
-    """``000_java_classes_prueba/src/test`` directory."""
+    """``tests/fixtures/java/sample_java_repo/src/test`` directory."""
     return java_classes_root / "src" / "test"
 
 
@@ -342,8 +342,8 @@ def convert_csv_module(load_project_module):
 # ---------------------------------------------------------------------------
 @pytest.fixture(scope="session")
 def repo_prueba_payload(repo_root: Path) -> List[Dict[str, Any]]:
-    """Parsed content of ``repos_prueba.json`` (15 ``repo_id``/``url`` entries)."""
-    path = repo_root / "repos_prueba.json"
+    """Parsed content of ``tests/fixtures/repos_prueba.json`` (15 entries)."""
+    path = repo_root / "tests" / "fixtures" / "repos_prueba.json"
     if not path.is_file():
         pytest.skip(f"Missing fixture: {path}")
     return json.loads(path.read_text(encoding="utf-8"))
@@ -370,16 +370,16 @@ def make_corpus_record() -> Callable[..., Dict[str, str]]:
 # ---------------------------------------------------------------------------
 @pytest.fixture
 def java_tmp_tree(tmp_path: Path) -> Path:
-    """Copy of ``000_java_classes_prueba`` (``src/main`` + ``src/test``) in ``tmp_path``.
+    """Copy of ``sample_java_repo`` (``src/main`` + ``src/test``) in ``tmp_path``.
 
     Returns the project root, so tests build paths such as
     ``java_tmp_tree / "src/main/com/eljavatar/focals/FocalContext.java"``.
     """
-    source = REPO_ROOT / "000_java_classes_prueba"
+    source = REPO_ROOT / "tests" / "fixtures" / "java" / "sample_java_repo"
     if not source.is_dir():
         pytest.skip(f"Missing fixture project: {source}")
 
-    destination = tmp_path / "000_java_classes_prueba"
+    destination = tmp_path / "sample_java_repo"
     for split in ("main", "test"):
         split_source = source / "src" / split
         if split_source.is_dir():

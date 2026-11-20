@@ -33,7 +33,7 @@ Testability notes / pinned divergences from ``tests/TEST_PLAN.md``
    ``parameters_list`` (the arity/type contract) so the assertions stay
    meaningful if the textual format ever changes.
 2. **One test case per test** — the fixture
-   [`FocalContextTest.java`](000_java_classes_prueba/src/test/com/eljavatar/focals/FocalContextTest.java:15)
+   [`FocalContextTest.java`](tests/fixtures/java/sample_java_repo/src/test/com/eljavatar/focals/FocalContextTest.java:15)
    holds seven ``@Test`` methods while the plan describes
    ``len(mapped) == 1`` (a single-input invocation). The helper ``_match(...)``
    therefore selects the requested test case and passes a one-element list,
@@ -44,7 +44,7 @@ Testability notes / pinned divergences from ``tests/TEST_PLAN.md``
    [`find_map_tests_cases_from_repo.py:614`](find_map_tests_cases_from_repo.py:614):
    ``runSomeVoidTest`` invokes ``runSomeVoid(1L)`` yet is mapped to the first
    ``runSomeVoid`` declaration
-   ([`FocalContext.java:83`](000_java_classes_prueba/src/main/com/eljavatar/focals/FocalContext.java:83),
+   ([`FocalContext.java:83`](tests/fixtures/java/sample_java_repo/src/main/com/eljavatar/focals/FocalContext.java:83),
    ``String``) because only *names* are compared. Production code is not
    modified.
 4. **U-MAP-07 is an intentional strict ``xfail``** (the Spoon-desired
@@ -74,7 +74,7 @@ DO_SOMETHING_PARAMETERS = (
 )
 
 #: ``parameters`` of the first ``runSomeVoid`` overload
-#: ([`FocalContext.java:83`](000_java_classes_prueba/src/main/com/eljavatar/focals/FocalContext.java:83)).
+#: ([`FocalContext.java:83`](tests/fixtures/java/sample_java_repo/src/main/com/eljavatar/focals/FocalContext.java:83)).
 RUN_SOME_VOID_STRING_PARAMETERS = "runSomeVoid(String)"
 
 #: Keys removed in place by the name strategy
@@ -209,7 +209,7 @@ def test_u_map_06_overloaded_name_match_always_picks_first_declaration(
     keeps only ``focal_methods_names_norm`` and takes the *first* hit via
     ``list.index()`` ([`find_map_tests_cases_from_repo.py:614`](find_map_tests_cases_from_repo.py:614)),
     which is the ``String`` overload declared at
-    [`FocalContext.java:83`](000_java_classes_prueba/src/main/com/eljavatar/focals/FocalContext.java:83).
+    [`FocalContext.java:83`](tests/fixtures/java/sample_java_repo/src/main/com/eljavatar/focals/FocalContext.java:83).
     """
     _test_class, _focal_class, test_cases, _focal_methods = match_inputs_real
     test_case = _test_case(test_cases, "runSomeVoidTest")

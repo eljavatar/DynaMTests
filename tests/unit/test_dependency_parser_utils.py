@@ -28,7 +28,7 @@ Operational facts honoured here
    paths of the ``all_focal_java_files`` fixture.  Nothing depends on the real
    repository cwd.
 2. Fixture quirk kept as-is:
-   [`SamePackageExternal01.java:1`](000_java_classes_prueba/src/main/com/eljavatar/externals/SamePackageExternal01.java:1)
+   [`SamePackageExternal01.java:1`](tests/fixtures/java/sample_java_repo/src/main/com/eljavatar/externals/SamePackageExternal01.java:1)
    declares ``package com.eljavatar.focals;`` while living under ``externals/``.
    Package matching is folder based
    ([`get_path_imports()`](dependency_parser_utils.py:465)), which is why the

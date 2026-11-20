@@ -17,7 +17,7 @@ Three collaborating functions of
   test case.
 
 Real ``ClassParser`` / ``DependencyClassParser`` / ``DependencyParserUtils``
-instances run over a ``tmp_path`` copy of ``000_java_classes_prueba``; no
+instances run over a ``tmp_path`` copy of ``sample_java_repo``; no
 hand-written dicts are involved (unlike the U-MAP unit block).
 
 Module acquisition

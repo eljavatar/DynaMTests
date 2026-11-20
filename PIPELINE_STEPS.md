@@ -4,7 +4,7 @@
 
 **Alcance.** Se documentan los cuatro scripts del flujo principal (secciones 1 a 4), los cuatro módulos de soporte del análisis AST (sección 5), la secuencia de construcción del corpus de evaluación Defects4J, incluidos sus envoltorios de shell y Perl (sección 6), y los seis utilitarios de ejecución manual (sección 7). Cada paso termina con una referencia `file:line` que lo ancla al código fuente.
 
-**Nota sobre fixtures.** Los archivos [`MyClass.java`](MyClass.java:1), la carpeta `000_java_classes_prueba/` y el JSON [`repos_prueba.json`](repos_prueba.json:1) son fixtures de prueba usados por la batería de tests del propio repositorio. No son insumos del pipeline y no participan en ninguna de las etapas descritas; `MyClass.java` y `000_java_classes_prueba/` se referencian únicamente desde el arnés de depuración [`test_extract_dependencies()`](find_map_tests_cases_from_repo.py:407), cuya invocación está comentada.
+**Nota sobre fixtures.** Los archivos [`MyClass.java`](MyClass.java:1), la carpeta `tests/fixtures/java/sample_java_repo/` y el JSON [`repos_prueba.json`](repos_prueba.json:1) son fixtures de prueba usados por la batería de tests del propio repositorio. No son insumos del pipeline y no participan en ninguna de las etapas descritas; `MyClass.java` y `tests/fixtures/java/sample_java_repo/` se referencian únicamente desde el arnés de depuración [`test_extract_dependencies()`](find_map_tests_cases_from_repo.py:407), cuya invocación está comentada.
 
 **Convención de etiquetas.** Las etiquetas conceptuales `FM_FC_MS_FF` y `FM_FC_DCTX` **no existen como literales** en el código: corresponden a las variables `src_fm_fc_ms_ff` y `src_fm_fc_dctx`, más la variante adicional `src_fm_fc_dctx_priv`, todas emitidas por [`build_format_corpus()`](build_corpus.py:416).
 
@@ -230,7 +230,7 @@ Se documenta primero la unidad de trabajo por repositorio ([`analyze_project()`]
 
 ### 1.7 Arnés de depuración `test_extract_dependencies()`
 
-1.7.1 El método [`test_extract_dependencies()`](find_map_tests_cases_from_repo.py:407) contiene una ruta local fija a `000_java_classes_prueba`, una lista manual de archivos Java y la invocación de `parse_potential_focal_methods` sobre `FocalContext.java` ([`find_map_tests_cases_from_repo.py:417-449`](find_map_tests_cases_from_repo.py:417)).
+1.7.1 El método [`test_extract_dependencies()`](find_map_tests_cases_from_repo.py:407) contiene una ruta local fija a `tests/fixtures/java/sample_java_repo/`, una lista manual de archivos Java y la invocación de `parse_potential_focal_methods` sobre `FocalContext.java` ([`find_map_tests_cases_from_repo.py:417-449`](find_map_tests_cases_from_repo.py:417)).
 
 1.7.2 Su única invocación está comentada, por lo que no participa del flujo productivo ni consume fixtures del pipeline ([`find_map_tests_cases_from_repo.py:328`](find_map_tests_cases_from_repo.py:328)).
 

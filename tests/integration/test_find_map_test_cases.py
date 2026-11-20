@@ -96,7 +96,7 @@ def _fake_check_output_no_matches(*_args: Any, **_kwargs: Any) -> bytes:
 
 
 def _repo_from_payload(payload) -> Dict[str, str]:
-    """Build the ``repo`` dict used by the pipeline from ``repos_prueba.json`` entry 0.
+    """Build the ``repo`` dict from ``tests/fixtures/repos_prueba.json`` entry 0.
 
     Only ``repo_id`` / ``url`` are consumed: ``find_map_test_cases()`` writes them
     into ``log.txt`` and uses ``repo_id`` as the JSON file prefix. No clone is

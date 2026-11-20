@@ -190,7 +190,7 @@ To perform the mining and data extraction process, a `json` file containing the 
 ]
 ```
 
-You can have more attributes per repository, however, the minimum data required to be able to perform the minaodo are the `repo_id` and `url` attributes. You can use the `repos_prueba.json` file to perform a quick test.
+You can have more attributes per repository, however, the minimum data required to be able to perform the minaodo are the `repo_id` and `url` attributes. You can use the `tests/fixtures/repos_prueba.json` file to perform a quick test.
 
 The files used to build our dataset were `repos/train.json`, `repos/validation.json` and `repos/test.json`. However, it is likely that using those same repository lists would not yield the same dataset as ours, due to reasons such as the following:
 
@@ -214,11 +214,11 @@ Some repositories require authentication to be cloned, therefore, to generate th
 
 ### Extraction and analysis of repositories
 
-To perform the process of data extraction and analysis of the repositories, the following script is executed to which the json file containing the list of repositories with the format indicated in section [GitHub repository list](#github-repository-list) must be passed as a parameter. For this example we use the file `repos_prueba.json`:
+To perform the process of data extraction and analysis of the repositories, the following script is executed to which the json file containing the list of repositories with the format indicated in section [GitHub repository list](#github-repository-list) must be passed as a parameter. For this example we use the file `tests/fixtures/repos_prueba.json`:
 
 ```shell
 python find_map_tests_cases_from_repo.py \
-    --repos_file "repos_prueba.json" \
+    --repos_file "tests/fixtures/repos_prueba.json" \
     --tmp "/tmp/tmp_repos/" \
     --output "/mining_results/train/output" \
     --output_empty "/mining_results/train/output_empty"
